@@ -1,0 +1,10 @@
+# Java / Maven (lo usarás desde la Semana 7)
+target/
+*.class
+.idea/
+*.iml
+
+# General
+.DS_Store
+*.log
+notas_personales.txt
