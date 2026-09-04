@@ -1,0 +1,19 @@
+package gt.edu.url.sistema_control_inventario_bodega_automotriz;
+
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+public class BienvenidaController {
+
+    @GetMapping("/api/saludo")
+    public String saludo() {
+        return "¡Bienvenido(a) al Sistema de Control e Inventario de Bodega Automotriz!";
+    }
+
+    @GetMapping("/api/bienvenida")
+    public String bienvenida(@RequestParam(defaultValue = "visitante") String nombre) {
+        return "Hola, " + nombre + ". Gracias por consultar el Sistema de Control e Inventario de Bodega Automotriz.";
+    }
+}
