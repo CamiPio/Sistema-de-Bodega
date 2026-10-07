@@ -4,12 +4,14 @@ import java.util.List;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 
 import gt.edu.url.sistema_control_inventario_bodega_automotriz.model.Usuario;
 import gt.edu.url.sistema_control_inventario_bodega_automotriz.service.UsuarioService;
+import jakarta.validation.Valid;
 
 @Controller
 public class UsuarioController {
@@ -29,12 +31,22 @@ public class UsuarioController {
         return "login"; // Carga tu archivo login.html
     }
 
-    // Procesa el formulario de Registro
+    // Procesa el formulario de Registro con validaciones activas
     @PostMapping("/auth/registrar")
-    public String registrarUsuario(@ModelAttribute Usuario usuarioRegistro) {
+    public String registrarUsuario(@Valid @ModelAttribute("usuarioRegistro") Usuario usuarioRegistro, 
+                                   BindingResult bindingResult, Model model) {
+        
+        // Si hay errores en las validaciones (campos vacíos, contraseña corta, etc.)
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("usuarioLogin", new Usuario()); // Mantiene el objeto login vivo
+            return "login"; // Recarga la vista de login/registro mostrando los errores
+        }
+
         usuarioService.guardar(usuarioRegistro);
         System.out.println("¡Usuario registrado con éxito: " + usuarioRegistro.getCorreo() + "!");
-        return "redirect:/login?exito=true";
+        
+        // Te redirige directamente a la lista de usuarios para visualizarlos
+        return "redirect:/usuarios/lista";
     }
 
     // Procesa el formulario de Inicio de Sesión
@@ -54,11 +66,12 @@ public class UsuarioController {
         }
     }
 
+    // Muestra la lista de usuarios registrados
     @GetMapping("/usuarios/lista")
     public String listarUsuarios(Model model) {
         List<Usuario> lista = usuarioService.listarTodos();
         model.addAttribute("usuarios", lista);
         model.addAttribute("total", lista.size());
-        return "listaUsuarios";
+        return "listaUsuarios"; // Apunta al archivo listaUsuarios.html en templates
     }
 }
