@@ -15,7 +15,13 @@ public class UsuarioService {
 
     public UsuarioService() {
         // (Opcional) Agregamos un usuario por defecto para pruebas rápidas de login
-        usuarios.add(new Usuario("Admin", "General", "admin@bodega.com", "123456789012"));
+        Usuario adminPorDefecto = new Usuario();
+        adminPorDefecto.setNombre("Admin");
+        adminPorDefecto.setApellido("General");
+        adminPorDefecto.setCorreo("admin@bodega.com");
+        adminPorDefecto.setContrasena("123456789012");
+        
+        usuarios.add(adminPorDefecto);
     }
 
     // Registrar un nuevo usuario

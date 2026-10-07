@@ -1,11 +1,36 @@
 package gt.edu.url.sistema_control_inventario_bodega_automotriz.model;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
+@Entity
 public class Prestamo {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int idPresamo;
+
+    @NotBlank(message = "La fecha es obligatoria.")
+    @Column(nullable = false)
     private String fecha;
-    private int idProducto;
+
+    @NotNull(message = "El ID del producto es obligatorio.")
+    @Column(nullable = false)
+    private Integer idProducto;
+
+    @NotBlank(message = "El nombre del solicitante es obligatorio.")
+    @Column(nullable = false)
     private String nombreSolicitante;
+
+    @NotNull(message = "El estado activo es obligatorio.")
+    @Column(nullable = false)
     private boolean estadoActivo;
+
     private String observacionEntrega;
 
     // Constructor vacío
