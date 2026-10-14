@@ -1,46 +1,61 @@
 package gt.edu.url.sistema_control_inventario_bodega_automotriz.service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
 
 import gt.edu.url.sistema_control_inventario_bodega_automotriz.model.Usuario;
+import gt.edu.url.sistema_control_inventario_bodega_automotriz.repository.UsuarioRepository;
 
 @Service
 public class UsuarioService {
 
-    // Memoria temporal para almacenar los usuarios registrados
-    private final List<Usuario> usuarios = new ArrayList<>();
+    private final UsuarioRepository repositorio;
 
-    public UsuarioService() {
-        // (Opcional) Agregamos un usuario por defecto para pruebas rápidas de login
-        Usuario adminPorDefecto = new Usuario();
-        adminPorDefecto.setNombre("Admin");
-        adminPorDefecto.setApellido("General");
-        adminPorDefecto.setCorreo("admin@bodega.com");
-        adminPorDefecto.setContrasena("123456789012");
-        
-        usuarios.add(adminPorDefecto);
+    public UsuarioService(UsuarioRepository repositorio) {
+        this.repositorio = repositorio;
+
+        // Si la base de datos está totalmente vacía, creamos e insertamos el admin por defecto
+        if (repositorio.count() == 0) {
+            Usuario admin = new Usuario();
+            admin.setNombre("Admin");
+            admin.setApellido("General");
+            admin.setCorreo("admin@bodega.com");
+            admin.setContrasena("123456789012"); // Asegúrate de cumplir las reglas de @Size en tu modelo
+            repositorio.save(admin);
+        }
     }
 
-    // Registrar un nuevo usuario
-    public void guardar(Usuario usuario) {
-        usuarios.add(usuario);
-    }
-
-    // Listar todos los usuarios
     public List<Usuario> listarTodos() {
-        return usuarios;
+        return repositorio.findAll();
     }
 
-    // Validar si las credenciales de inicio de sesión son correctas
+    public Usuario buscarPorId(Long id) {
+        return repositorio.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("No existe un usuario con id " + id));
+    }
+
+    // Buscar usuario por nombre (retorna una lista por si hay coincidencias parciales)
+    public List<Usuario> buscarPorNombre(String nombre) {
+        return repositorio.findByNombreContainingIgnoreCase(nombre);
+    }
+
+    public Usuario guardar(Usuario usuario) {
+        return repositorio.save(usuario);
+    }
+
+    public void eliminar(Long id) {
+        repositorio.deleteById(id);
+    }
+
+    // Método para validar el inicio de sesión contra la base de datos
     public Usuario validarLogin(String correo, String contrasena) {
+        List<Usuario> usuarios = repositorio.findAll();
         for (Usuario user : usuarios) {
             if (user.getCorreo().equalsIgnoreCase(correo) && user.getContrasena().equals(contrasena)) {
-                return user; // Retorna el usuario si coincide
+                return user;
             }
         }
-        return null; 
+        return null;
     }
 }

@@ -45,8 +45,8 @@ public class UsuarioController {
         usuarioService.guardar(usuarioRegistro);
         System.out.println("¡Usuario registrado con éxito: " + usuarioRegistro.getCorreo() + "!");
         
-        // Te redirige directamente a la lista de usuarios para visualizarlos
-        return "redirect:/usuarios/lista";
+        // Te redirige al incio de sesión
+        return "redirect:/login?exito=true";
     }
 
     // Procesa el formulario de Inicio de Sesión

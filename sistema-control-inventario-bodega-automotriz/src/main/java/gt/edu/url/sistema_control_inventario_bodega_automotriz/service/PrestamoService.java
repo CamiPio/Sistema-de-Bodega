@@ -1,36 +1,35 @@
 package gt.edu.url.sistema_control_inventario_bodega_automotriz.service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
 
 import gt.edu.url.sistema_control_inventario_bodega_automotriz.model.Prestamo;
+import gt.edu.url.sistema_control_inventario_bodega_automotriz.repository.PrestamoRepository;
 
 @Service
 public class PrestamoService {
 
-    // La "memoria" de la aplicación: se vacía cada vez que reinicias.
-    private final List<Prestamo> prestamos = new ArrayList<>();
+    private final PrestamoRepository repositorio;
 
-    public void guardar(Prestamo prestamo) {
-        prestamos.add(prestamo);
+    public PrestamoService(PrestamoRepository repositorio) {
+        this.repositorio = repositorio;
     }
 
     public List<Prestamo> listarTodos() {
-        return prestamos;
+        return repositorio.findAll();
     }
 
-    public int contar() {
-        return prestamos.size();
+    public Prestamo buscarPorId(Long id) {
+        return repositorio.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("No existe un préstamo con id " + id));
     }
 
-    public Prestamo buscarPorNombre(String nombre) {
-        for (Prestamo productoPrestamo : prestamos) {
-            if (productoPrestamo.getNombreSolicitante().equalsIgnoreCase(nombre)) {
-                return productoPrestamo;
-            }
-        }
-        return null; // Retorna nulo si encuentra el nombre
+    public Prestamo guardar(Prestamo prestamo) {
+        return repositorio.save(prestamo);
+    }
+
+    public void eliminar(Long id) {
+        repositorio.deleteById(id);
     }
 }
