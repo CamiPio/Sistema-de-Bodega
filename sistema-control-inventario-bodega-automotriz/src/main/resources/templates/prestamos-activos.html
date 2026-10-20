@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Control de Préstamos Activos - Inventario de Bodega</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f6f9;
+      margin: 0;
+      padding: 20px;
+    }
+    .header {
+      background-color: #007bff;
+      color: white;
+      text-align: center;
+      padding: 15px;
+      font-size: 22px;
+      font-weight: bold;
+      border-radius: 4px;
+      margin-bottom: 20px;
+    }
+    .nav-links {
+      margin-bottom: 15px;
+    }
+    .nav-links a {
+      background-color: #004085;
+      color: white;
+      padding: 8px 15px;
+      text-decoration: none;
+      border-radius: 4px;
+      font-size: 14px;
+      margin-right: 10px;
+    }
+    .nav-links a:hover {
+      background-color: #004085;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: white;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+    th {
+      background-color: #007bff;
+      color: white;
+      text-align: left;
+      padding: 10px;
+      font-size: 14px;
+    }
+    td {
+      padding: 10px;
+      border: 1px solid #ddd;
+      font-size: 14px;
+      color: #333;
+      vertical-align: middle;
+    }
+    .btn-return {
+      color: white;
+      background-color: #28a745;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .btn-return:hover {
+      background-color: #218838;
+    }
+    .input-obs {
+      width: 100%;
+      padding: 5px;
+      box-sizing: border-box;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+      margin-bottom: 5px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    Inventario de Bodega Mecánica Automotriz
+  </div>
+
+  <!-- Enlaces actualizados con la sintaxis de Thymeleaf th:href -->
+  <div class="nav-links">
+    <a th:href="@{/catalogo}">Ir al Catálogo</a>
+    <a th:href="@{/prestamos/nuevo}">Registrar Nuevo Préstamo</a>
+  </div>
+
+  <h2 style="color: #003366;">Listado de Préstamos Activos</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th>ID Préstamo</th>
+        <th>ID Producto</th>
+        <th>Solicitante</th>
+        <th>Fecha</th>
+        <th>Estado</th>
+        <th>Observación / Estado de Entrega</th>
+        <th>Acción / Devolución</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Recorremos la lista de préstamos enviada desde el controlador -->
+      <tr th:each="p : ${prestamos}">
+        <td th:text="${p.idPresamo}">1</td>
+        <td th:text="${p.idProducto}">1</td>
+        <td th:text="${p.nombreSolicitante}">Juan Pérez</td>
+        <td th:text="${p.fecha}">2026-06-13</td>
+        <td>
+          <span th:if="${p.estadoActivo == true}" style="color: orange; font-weight: bold;">Prestado</span>
+          <span th:if="${p.estadoActivo == false}" style="color: green; font-weight: bold;">Entregado</span>
+        </td>
+        <td th:text="${p.observacionEntrega}">Sin observaciones</td>
+        <td>
+          <!-- Formulario individual para la devolución apuntando a idPresamo -->
+          <form th:action="@{/prestamos/devolver/{id}(id=${p.idPresamo})}" method="POST">
+            <input type="text" name="observacionEntrega" class="input-obs" placeholder="Ej. Buen estado / Mantenimiento" required />
+            <button type="submit" class="btn-return">Marcar como Entregado</button>
+          </form>
+        </td>
+      </tr>
+      <!-- Mensaje si no hay registros -->
+      <tr th:if="${#lists.isEmpty(prestamos)}">
+        <td colspan="7" style="text-align: center; color: #777;">No hay préstamos activos registrados en este momento.</td>
+      </tr>
+    </tbody>
+  </table>
+
+</body>
+</html>

@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Usuarios Registrados - Bodega Automotriz</title>
+  <link rel="stylesheet" th:href="@{/styles.css}" />
+</head>
+<body style="background-color: var(--color-principal); color: white; padding: 40px; font-family: 'Poppins', sans-serif;">
+<main style="max-width: 800px; margin: 0 auto; background: white; color: black; padding: 30px; border-radius: 20px; box-shadow: 0 0 20px rgba(0,0,0,0.3);">
+  
+  <h1 style="color: var(--color-principal); margin-bottom: 10px;">Usuarios Registrados en el Sistema</h1>
+  <p>Total de usuarios: <strong th:text="${total}">0</strong></p>
+
+  <p th:if="${total == 0}" style="margin-top: 20px; color: #666;">Todavía no hay usuarios registrados.</p>
+
+  <table th:if="${total > 0}" style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+    <thead>
+      <tr style="background-color: var(--color-principal); color: white;">
+        <th style="padding: 10px; border: 1px solid #ddd;">#</th>
+        <th style="padding: 10px; border: 1px solid #ddd;">Nombre</th>
+        <th style="padding: 10px; border: 1px solid #ddd;">Apellido</th>
+        <th style="padding: 10px; border: 1px solid #ddd;">Correo Electrónico</th>
+        <th style="padding: 10px; border: 1px solid #ddd;">Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr th:each="u, estado : ${usuarios}">
+        <td style="padding: 10px; border: 1px solid #ddd; text-align: center;" th:text="${estado.count}">1</td>
+        <td style="padding: 10px; border: 1px solid #ddd;" th:text="${u.nombre}">Nombre</td>
+        <td style="padding: 10px; border: 1px solid #ddd;" th:text="${u.apellido}">Apellido</td>
+        <td style="padding: 10px; border: 1px solid #ddd;" th:text="${u.correo}">correo@ejemplo.com</td>
+        <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">
+          <a th:href="@{/usuarios/detalle/{correo}(correo=${u.correo})}" style="color: var(--color-acento); text-decoration: none; font-weight: bold;">Ver</a>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p style="margin-top: 30px;"><a th:href="@{/login}" style="background-color: var(--color-acento); color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none;">Regresar al Login / Registro</a></p>
+</main>
+</body>
+</html>
