@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Nuevo Producto - Inventario</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background-color: #f4f6f9; }
+        form { background: white; padding: 20px; border-radius: 8px; max-width: 400px; }
+        label { display: block; margin-top: 10px; font-weight: bold; }
+        input, select { width: 100%; padding: 8px; margin-top: 5px; box-sizing: border-box; }
+        button { margin-top: 15px; background: #28a745; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <h2>Registrar Nuevo Producto</h2>
+
+    <!-- El formulario se conecta al objeto 'catalogo' y envía los datos por POST a /catalogo/guardar -->
+    <form action="#" th:action="@{/catalogo/guardar}" th:object="${catalogo}" method="post">
+        
+        <label>Nombre:</label>
+        <input type="text" th:field="*{nombre}" required />
+
+        <label>Categoría:</label>
+        <input type="text" th:field="*{categoria}" required />
+
+        <label>Descripción:</label>
+        <input type="text" th:field="*{descripcion}" />
+
+        <label>Cantidad:</label>
+        <input type="number" th:field="*{cantidad}" required />
+
+        <label>Disponibilidad:</label>
+        <input type="text" th:field="*{disponibilidad}" />
+
+        <label>Observación:</label>
+        <input type="text" th:field="*{observacion}" />
+
+        <button type="submit">Guardar Producto</button>
+    </form>
+
+    <p><a href="/catalogo">Regresar al catálogo</a></p>
+
+</body>
+</html>

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barra de Menú</title>
+
+    <script src="https://use.fontawesome.com/releases/v6.1.0/js/all.js" crossorigin="anonymous"></script>   
+    
+    <!-- CAMBIA ESTA LÍNEA EXACTAMENTE ASÍ: -->
+    <link rel="stylesheet" th:href="@{/css/barraMenu.css}">
+</head>
+<body>
+
+    <!-- Definimos un fragmento llamado 'menu' para reutilizarlo en otras vistas -->
+    <div th:fragment="menu">
+        <nav class="barra-menu">
+            <div class="contenedor-menu">
+                
+                <a href="#" class="logo">
+                    <!-- Logo de la bodega -->
+                </a>
+
+                <ul class="accesos-directos" id="accesosDirectos">
+                    <!-- Enlaces apuntando a los endpoints de tus controladores en Spring Boot -->
+                    <li><a th:href="@{/catalogo}">Catálogo</a></li>
+                    <li><a th:href="@{/usuarios/lista}">Lista de Usuarios</a></li>
+
+                    <!-- Acciones para los recursos -->
+                    <li style="position: relative;">
+                        <button id="opRecurso">Acciones</button>
+                        <div id="listaRecurso" class="lista-perfil">
+                            <button onclick="window.location.href='/catalogo'">Ver Catálogo</button>
+                            <button onclick="window.location.href='/usuarios/lista'">Ver Usuarios</button>
+                        </div>
+                    </li>
+
+                    <!-- Lista dentro de Perfil -->
+                    <li style="position: relative;">
+                        <button id="opPerfil">Perfil</button>
+                        <div id="listaPerfil" class="lista-perfil">
+                            <!-- Redirige al login o cierre de sesión de tu aplicación -->
+                            <button onclick="window.location.href='/login'">Cerrar Sesión</button>
+                            <button onclick="window.location.href='#'">Editar mi perfil</button>
+                        </div>
+                    </li>
+                </ul>
+
+                <!-- Barra de búsqueda -->
+                <div class="contenedor-busqueda">
+                    <input type="text" placeholder="Buscar...">
+                    <button id="buscarBtn"><i class="fas fa-search"></i></button>
+                </div>
+
+                <button class="boton-menu" id="menuBtn">
+                    ☰
+                </button>
+            </div>
+        </nav>
+    </div>
+
+    <!-- Script estático con sintaxis de Thymeleaf -->
+    <script th:src="@{/js/barraMenu.js}"></script>
+    
+</body>
+</html>
