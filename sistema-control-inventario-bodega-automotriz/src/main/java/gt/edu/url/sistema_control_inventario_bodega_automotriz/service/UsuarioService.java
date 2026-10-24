@@ -1,8 +1,10 @@
 package gt.edu.url.sistema_control_inventario_bodega_automotriz.service;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import gt.edu.url.sistema_control_inventario_bodega_automotriz.model.RolUsuario;
@@ -13,9 +15,11 @@ import gt.edu.url.sistema_control_inventario_bodega_automotriz.repository.Usuari
 public class UsuarioService {
 
     private final UsuarioRepository repositorio;
+    private final PasswordEncoder passwordEncoder;
 
-    public UsuarioService(UsuarioRepository repositorio) {
+    public UsuarioService(UsuarioRepository repositorio, PasswordEncoder passwordEncoder) {
         this.repositorio = repositorio;
+        this.passwordEncoder = passwordEncoder;
 
         // Si la base de datos está totalmente vacía, creamos e insertamos el admin por defecto
         if (repositorio.count() == 0) {
@@ -23,7 +27,7 @@ public class UsuarioService {
             admin.setNombre("Admin");
             admin.setApellido("General");
             admin.setCorreo("admin@bodega.com");
-            admin.setContrasena("123456789012"); // Asegúrate de cumplir las reglas de @Size en tu modelo
+            admin.setContrasena(passwordEncoder.encode("123456789012"));
             admin.setRol(RolUsuario.ADMIN);
             repositorio.save(admin);
         } else {
@@ -47,6 +51,10 @@ public class UsuarioService {
                 .orElseThrow(() -> new IllegalArgumentException("No existe un usuario con id " + id));
     }
 
+    public Optional<Usuario> buscarPorCorreo(String correo) {
+        return repositorio.findByCorreoIgnoreCase(correo);
+    }
+
     // Buscar usuario por nombre (retorna una lista por si hay coincidencias parciales)
     public List<Usuario> buscarPorNombre(String nombre) {
         return repositorio.findByNombreContainingIgnoreCase(nombre);
@@ -55,6 +63,9 @@ public class UsuarioService {
     public Usuario guardar(Usuario usuario) {
         if (usuario.getRol() == null) {
             usuario.setRol(RolUsuario.USUARIO);
+        }
+        if (!esHashBcrypt(usuario.getContrasena())) {
+            usuario.setContrasena(passwordEncoder.encode(usuario.getContrasena()));
         }
         try {
             return repositorio.save(usuario);
@@ -70,7 +81,27 @@ public class UsuarioService {
     }
 
     public void eliminar(Long id) {
+        Usuario usuario = buscarPorId(id);
+        if (usuario.getRol() == RolUsuario.ADMIN
+                && repositorio.countByRol(RolUsuario.ADMIN) <= 1) {
+            throw new IllegalStateException("No se puede eliminar al último administrador.");
+        }
         repositorio.deleteById(id);
+    }
+
+    public Usuario actualizar(Long id, String nombre, String apellido, String correo, String contrasena) {
+        Usuario usuario = buscarPorId(id);
+        usuario.setNombre(nombre);
+        usuario.setApellido(apellido);
+        usuario.setCorreo(correo);
+        if (contrasena != null && !contrasena.isBlank()) {
+            usuario.setContrasena(passwordEncoder.encode(contrasena));
+        }
+        try {
+            return repositorio.save(usuario);
+        } catch (DataIntegrityViolationException e) {
+            throw new RuntimeException("El correo electrónico '" + correo + "' ya se encuentra registrado en el sistema.", e);
+        }
     }
 
     public void actualizarRol(Long id, RolUsuario rol) {
@@ -85,13 +116,29 @@ public class UsuarioService {
 
     // Método para validar el inicio de sesión contra la base de datos
     public Usuario validarLogin(String correo, String contrasena) {
-        List<Usuario> usuarios = repositorio.findAll();
-        for (Usuario user : usuarios) {
-            if (user.getCorreo().equalsIgnoreCase(correo) && user.getContrasena().equals(contrasena)) {
-                return user;
-            }
+        if (correo == null || contrasena == null) {
+            return null;
         }
-        return null;
+        Usuario usuario = repositorio.findByCorreoIgnoreCase(correo).orElse(null);
+        if (usuario == null) {
+            return null;
+        }
+
+        String contrasenaGuardada = usuario.getContrasena();
+        if (esHashBcrypt(contrasenaGuardada)) {
+            return passwordEncoder.matches(contrasena, contrasenaGuardada) ? usuario : null;
+        }
+        if (!contrasenaGuardada.equals(contrasena)) {
+            return null;
+        }
+
+        usuario.setContrasena(passwordEncoder.encode(contrasena));
+        return repositorio.save(usuario);
+    }
+
+    private boolean esHashBcrypt(String valor) {
+        return valor != null && (valor.startsWith("$2a$") || valor.startsWith("$2b$")
+                || valor.startsWith("$2y$"));
     }
     
 }

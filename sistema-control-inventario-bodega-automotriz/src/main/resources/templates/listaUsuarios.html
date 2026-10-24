@@ -57,6 +57,7 @@
     <p>Total de usuarios: <strong th:text="${total}">0</strong></p>
     <p th:if="${mensaje}" th:text="${mensaje}" role="status"></p>
     <p th:if="${errorRol}" th:text="${errorRol}" role="alert"></p>
+    <p th:if="${errorUsuario}" th:text="${errorUsuario}" role="alert"></p>
 
     <p th:if="${total == 0}" style="margin-top: 20px; color: #666;">Todavía no hay usuarios registrados.</p>
 
@@ -88,6 +89,11 @@
           </td>
           <td style="text-align: center;">
             <a th:href="@{/usuarios/detalle/{correo}(correo=${u.correo})}" style="color: #007bff; text-decoration: none; font-weight: bold;">Ver</a>
+            <a th:href="@{/usuarios/editar/{id}(id=${u.id})}" style="color: #007bff; text-decoration: none; font-weight: bold; margin-left: 8px;">Editar</a>
+            <form th:action="@{/usuarios/eliminar/{id}(id=${u.id})}" method="post" style="display: inline;"
+                  onsubmit="return confirm('¿Eliminar este usuario?');">
+              <button type="submit">Eliminar</button>
+            </form>
           </td>
         </tr>
       </tbody>

@@ -2,6 +2,7 @@ package gt.edu.url.sistema_control_inventario_bodega_automotriz.controller;
 
 import java.util.List;
 
+import gt.edu.url.sistema_control_inventario_bodega_automotriz.dto.UsuarioEdicionForm;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -91,6 +92,67 @@ public class UsuarioController {
         model.addAttribute("total", lista.size());
         model.addAttribute("roles", RolUsuario.values());
         return "listaUsuarios"; // Apunta al archivo listaUsuarios.html en templates
+    }
+
+    @GetMapping("/usuarios/detalle/{correo}")
+    public String verUsuario(@PathVariable String correo, Model model,
+                             RedirectAttributes redirectAttributes) {
+        Usuario usuario = usuarioService.buscarPorCorreo(correo).orElse(null);
+        if (usuario == null) {
+            redirectAttributes.addFlashAttribute("errorUsuario", "No se encontró ese usuario.");
+            return "redirect:/usuarios/lista";
+        }
+        model.addAttribute("usuario", usuario);
+        return "detalleUsuario";
+    }
+
+    @GetMapping("/usuarios/editar/{id}")
+    public String mostrarEdicion(@PathVariable Long id, Model model) {
+        Usuario usuario = usuarioService.buscarPorId(id);
+        UsuarioEdicionForm formulario = new UsuarioEdicionForm();
+        formulario.setNombre(usuario.getNombre());
+        formulario.setApellido(usuario.getApellido());
+        formulario.setCorreo(usuario.getCorreo());
+        model.addAttribute("usuarioId", id);
+        model.addAttribute("usuarioForm", formulario);
+        return "editarUsuario";
+    }
+
+    @PostMapping("/usuarios/editar/{id}")
+    public String actualizarUsuario(@PathVariable Long id,
+                                    @Valid @ModelAttribute("usuarioForm") UsuarioEdicionForm formulario,
+                                    BindingResult bindingResult, Model model,
+                                    RedirectAttributes redirectAttributes) {
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("usuarioId", id);
+            return "editarUsuario";
+        }
+        try {
+            usuarioService.actualizar(id, formulario.getNombre(), formulario.getApellido(),
+                    formulario.getCorreo(), formulario.getContrasena());
+            redirectAttributes.addFlashAttribute("mensaje", "Usuario actualizado correctamente.");
+            return "redirect:/usuarios/lista";
+        } catch (RuntimeException e) {
+            model.addAttribute("usuarioId", id);
+            model.addAttribute("errorUsuario", e.getMessage());
+            return "editarUsuario";
+        }
+    }
+
+    @PostMapping("/usuarios/eliminar/{id}")
+    public String eliminarUsuario(@PathVariable Long id, HttpSession session,
+                                  RedirectAttributes redirectAttributes) {
+        if (id.equals(session.getAttribute("usuarioId"))) {
+            redirectAttributes.addFlashAttribute("errorUsuario", "No puedes eliminar tu propia cuenta activa.");
+            return "redirect:/usuarios/lista";
+        }
+        try {
+            usuarioService.eliminar(id);
+            redirectAttributes.addFlashAttribute("mensaje", "Usuario eliminado correctamente.");
+        } catch (IllegalStateException e) {
+            redirectAttributes.addFlashAttribute("errorUsuario", e.getMessage());
+        }
+        return "redirect:/usuarios/lista";
     }
 
     @PostMapping("/usuarios/{id}/rol")
