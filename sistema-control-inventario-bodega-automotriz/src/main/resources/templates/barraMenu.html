@@ -24,14 +24,14 @@
                 <ul class="accesos-directos" id="accesosDirectos">
                     <!-- Enlaces apuntando a los endpoints de tus controladores en Spring Boot -->
                     <li><a th:href="@{/catalogo}">Catálogo</a></li>
-                    <li><a th:href="@{/usuarios/lista}">Lista de Usuarios</a></li>
+                    <li th:if="${session.usuarioRol == 'ADMIN'}"><a th:href="@{/usuarios/lista}">Lista de Usuarios</a></li>
 
                     <!-- Acciones para los recursos -->
                     <li style="position: relative;">
                         <button id="opRecurso">Acciones</button>
                         <div id="listaRecurso" class="lista-perfil">
                             <button onclick="window.location.href='/catalogo'">Ver Catálogo</button>
-                            <button onclick="window.location.href='/usuarios/lista'">Ver Usuarios</button>
+                            <button th:if="${session.usuarioRol == 'ADMIN'}" onclick="window.location.href='/usuarios/lista'">Ver Usuarios</button>
                         </div>
                     </li>
 
@@ -40,7 +40,9 @@
                         <button id="opPerfil">Perfil</button>
                         <div id="listaPerfil" class="lista-perfil">
                             <!-- Redirige al login o cierre de sesión de tu aplicación -->
-                            <button onclick="window.location.href='/login'">Cerrar Sesión</button>
+                            <form th:action="@{/auth/logout}" method="post">
+                                <button type="submit">Cerrar Sesión</button>
+                            </form>
                             <button onclick="window.location.href='#'">Editar mi perfil</button>
                         </div>
                     </li>

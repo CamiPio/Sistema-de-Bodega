@@ -41,6 +41,10 @@
       background-color: #007bff;
       color: white;
     }
+    select, .boton-rol {
+      padding: 6px;
+      margin: 2px;
+    }
   </style>
 </head>
 <body>
@@ -51,6 +55,8 @@
   <main>
     <h1 style="color: #007bff; margin-bottom: 10px;">Usuarios Registrados en el Sistema</h1>
     <p>Total de usuarios: <strong th:text="${total}">0</strong></p>
+    <p th:if="${mensaje}" th:text="${mensaje}" role="status"></p>
+    <p th:if="${errorRol}" th:text="${errorRol}" role="alert"></p>
 
     <p th:if="${total == 0}" style="margin-top: 20px; color: #666;">Todavía no hay usuarios registrados.</p>
 
@@ -61,6 +67,7 @@
           <th>Nombre</th>
           <th>Apellido</th>
           <th>Correo Electrónico</th>
+          <th>Rol</th>
           <th style="text-align: center;">Acciones</th>
         </tr>
       </thead>
@@ -70,6 +77,15 @@
           <td th:text="${u.nombre}">Nombre</td>
           <td th:text="${u.apellido}">Apellido</td>
           <td th:text="${u.correo}">correo@ejemplo.com</td>
+          <td>
+            <form th:action="@{/usuarios/{id}/rol(id=${u.id})}" method="post">
+              <select name="rol" aria-label="Rol del usuario">
+                <option th:each="rol : ${roles}" th:value="${rol}" th:text="${rol}"
+                        th:selected="${rol == u.rol}"></option>
+              </select>
+              <button class="boton-rol" type="submit">Guardar rol</button>
+            </form>
+          </td>
           <td style="text-align: center;">
             <a th:href="@{/usuarios/detalle/{correo}(correo=${u.correo})}" style="color: #007bff; text-decoration: none; font-weight: bold;">Ver</a>
           </td>

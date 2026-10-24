@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
+import gt.edu.url.sistema_control_inventario_bodega_automotriz.model.RolUsuario;
 import gt.edu.url.sistema_control_inventario_bodega_automotriz.model.Usuario;
 import gt.edu.url.sistema_control_inventario_bodega_automotriz.repository.UsuarioRepository;
 
@@ -23,7 +24,17 @@ public class UsuarioService {
             admin.setApellido("General");
             admin.setCorreo("admin@bodega.com");
             admin.setContrasena("123456789012"); // Asegúrate de cumplir las reglas de @Size en tu modelo
+            admin.setRol(RolUsuario.ADMIN);
             repositorio.save(admin);
+        } else {
+            for (Usuario usuario : repositorio.findAll()) {
+                if (usuario.getRol() == null) {
+                    usuario.setRol("admin@bodega.com".equalsIgnoreCase(usuario.getCorreo())
+                            ? RolUsuario.ADMIN
+                            : RolUsuario.USUARIO);
+                    repositorio.save(usuario);
+                }
+            }
         }
     }
 
@@ -42,6 +53,9 @@ public class UsuarioService {
     }
 
     public Usuario guardar(Usuario usuario) {
+        if (usuario.getRol() == null) {
+            usuario.setRol(RolUsuario.USUARIO);
+        }
         try {
             return repositorio.save(usuario);
         } catch (DataIntegrityViolationException e) {
@@ -50,8 +64,23 @@ public class UsuarioService {
         }
     }
 
+    public Usuario registrar(Usuario usuario) {
+        usuario.setRol(RolUsuario.USUARIO);
+        return guardar(usuario);
+    }
+
     public void eliminar(Long id) {
         repositorio.deleteById(id);
+    }
+
+    public void actualizarRol(Long id, RolUsuario rol) {
+        Usuario usuario = buscarPorId(id);
+        if (rol == RolUsuario.USUARIO && usuario.getRol() == RolUsuario.ADMIN
+                && repositorio.countByRol(RolUsuario.ADMIN) <= 1) {
+            throw new IllegalStateException("Debe existir al menos un administrador.");
+        }
+        usuario.setRol(rol);
+        repositorio.save(usuario);
     }
 
     // Método para validar el inicio de sesión contra la base de datos

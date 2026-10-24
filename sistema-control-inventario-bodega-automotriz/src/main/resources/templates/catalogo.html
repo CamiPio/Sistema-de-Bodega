@@ -181,6 +181,7 @@
 
     <h1>Inventario de Bodega Mecánica Automotriz</h1>
     <p class="bienvenida">Bienvenido al sistema de gestión y control de herramientas y equipo</p>
+    <p th:if="${param.accesoDenegado}" role="alert">No tienes permisos para realizar esa acción.</p>
 
     <!-- Formulario / Contenedor principal de captura -->
     <form action="#" th:action="@{/catalogo/guardar}" th:object="${catalogoNuevo}" method="post">

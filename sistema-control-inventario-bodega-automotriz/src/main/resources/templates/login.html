@@ -35,6 +35,8 @@
         <div class="caja-formulario registro">
             <form th:action="@{/auth/registrar}" th:object="${usuarioRegistro}" method="post">
                 <h1>Registro de Usuario</h1>   
+                <p th:if="${mensajeRegistro}" th:text="${mensajeRegistro}" role="status"></p>
+                <p th:if="${errorRegistro}" th:text="${errorRegistro}" role="alert"></p>
                 
                 <div class="ingreso-datos">
                     <input type="email" th:field="*{correo}" placeholder="Correo electrónico" required>
