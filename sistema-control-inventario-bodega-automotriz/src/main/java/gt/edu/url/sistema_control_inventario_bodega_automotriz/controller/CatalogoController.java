@@ -4,6 +4,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 
 import gt.edu.url.sistema_control_inventario_bodega_automotriz.model.Catalogo;
@@ -33,4 +34,21 @@ public class CatalogoController {
         catalogoService.guardar(catalogo);
         return "redirect:/catalogo"; // Recarga la página para mostrar el cambio
     }
+
+    // Ruta para mostrar el formulario con los datos cargados para editar
+    @GetMapping("/catalogo/editar/{id}")
+    public String mostrarFormularioEditar(@PathVariable Long id, Model model) {
+        Catalogo catalogoExistente = catalogoService.buscarPorId(id);
+        model.addAttribute("catalogoNuevo", catalogoExistente);
+        model.addAttribute("listaCatalogo", catalogoService.listarTodos());
+        return "catalogo"; // Reutiliza la misma vista para actualizar
+    }
+
+    // Ruta para eliminar un producto por su ID
+    @GetMapping("/catalogo/eliminar/{id}")
+    public String eliminarCatalogo(@PathVariable Long id) {
+        catalogoService.eliminar(id);
+        return "redirect:/catalogo";
+    }
+
 }

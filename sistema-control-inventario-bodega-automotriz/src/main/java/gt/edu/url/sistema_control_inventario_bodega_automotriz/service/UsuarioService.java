@@ -2,6 +2,7 @@ package gt.edu.url.sistema_control_inventario_bodega_automotriz.service;
 
 import java.util.List;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import gt.edu.url.sistema_control_inventario_bodega_automotriz.model.Usuario;
@@ -41,7 +42,12 @@ public class UsuarioService {
     }
 
     public Usuario guardar(Usuario usuario) {
-        return repositorio.save(usuario);
+        try {
+            return repositorio.save(usuario);
+        } catch (DataIntegrityViolationException e) {
+            // Capturamos el error de unicidad (correo duplicado) y lanzamos un mensaje amigable
+            throw new RuntimeException("El correo electrónico '" + usuario.getCorreo() + "' ya se encuentra registrado en el sistema.", e);
+        }
     }
 
     public void eliminar(Long id) {
@@ -58,4 +64,5 @@ public class UsuarioService {
         }
         return null;
     }
+    
 }

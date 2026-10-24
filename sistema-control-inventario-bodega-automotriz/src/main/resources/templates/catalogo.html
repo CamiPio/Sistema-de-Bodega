@@ -1,12 +1,255 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Catálogo - Sistema de Bodega</title>
+    
+    <!-- ENLACE AL CSS DE LA BARRA DE MENÚ (Solución para que cargue los estilos correctamente) -->
+    <link rel="stylesheet" th:href="@{/barraMenu.css}" />
+
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 0; /* Ajustado a 0 para que la barra de menú ocupe bien el borde superior */
+            padding: 20px;
+            background-color: #f4f6f9; 
+        }
+
+        /* Título principal centrado con fondo azul */
+        h1 { 
+            text-align: center; 
+            background-color: #007bff; 
+            color: white; 
+            padding: 15px; 
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
+
+        /* Texto de bienvenida centrado, mediano, azul oscuro, negrita y cursiva */
+        .bienvenida { 
+            text-align: center; 
+            font-size: 1.1em; 
+            color: #003366; 
+            font-weight: bold; 
+            font-style: italic; 
+            margin-bottom: 25px;
+        }
+
+        /* Contenedor flexible para alinear el título de sección y el botón a la par */
+        .seccion-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 25px;
+            margin-bottom: 10px;
+        }
+
+        /* Título de sección "Productos Registrados en el Sistema" en azul oscuro y negrita */
+        .titulo-seccion {
+            color: #003366;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        /* Botón de Préstamos Activos a la par de la sección con color #004085 */
+        .btn-prestamos-header {
+            background-color: #004085; 
+            color: white; 
+            padding: 8px 15px; 
+            text-decoration: none;
+            border-radius: 5px; 
+            font-weight: bold;
+            font-size: 13px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .btn-prestamos-header:hover {
+            background-color: #002752;
+        }
+
+        /* Formulario (Primera tabla/contenedor) redondeado y con sombra sobresaliente */
+        form { 
+            background: white; 
+            padding: 25px; 
+            border-radius: 12px; 
+            max-width: 500px; 
+            margin: 0 auto 30px auto; 
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15); 
+        }
+
+        /* Título de Gestión de Productos diferenciado con el color azul */
+        .titulo-form {
+            text-align: center;
+            background-color: #007bff;
+            color: white;
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        label { 
+            display: block; 
+            margin-top: 10px; 
+            font-weight: bold; 
+            color: #333;
+        }
+
+        input { 
+            width: 100%; 
+            padding: 8px; 
+            margin-top: 5px; 
+            box-sizing: border-box; 
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        /* Botón centrado, pequeño, con color #0056b3 y hover más oscuro */
+        .btn-contenedor {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        button { 
+            background-color: #0056b3; 
+            color: white; 
+            padding: 8px 18px; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            font-weight: bold;
+            display: inline-block;
+        }
+
+        button:hover { 
+            background-color: #0056b3; 
+        }
+
+        /* Tabla de productos */
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-top: 10px; 
+            background: white; 
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        th, td { 
+            border: 1px solid #ddd; 
+            padding: 12px; 
+            text-align: left; 
+        }
+
+        th { 
+            background-color: #007bff; 
+            color: white; 
+        }
+
+        /* Efecto hover cuando el cursor se posiciona sobre las filas */
+        tbody tr:hover {
+            background-color: #e9ecef;
+            cursor: pointer;
+        }
+
+        /* Enlaces de acciones */
+        .btn-editar { 
+            color: #007bff; 
+            text-decoration: none; 
+            margin-right: 10px; 
+            font-weight: bold;
+        }
+
+        .btn-eliminar { 
+            color: #dc3545; 
+            text-decoration: none; 
+            font-weight: bold;
+        }
+
+        .btn-editar:hover, .btn-eliminar:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
-    <h1>HOLA MUNDO</h1>
-    <h2>Catalogo prueba</h2>
+
+    <!-- INSERCIÓN DE LA BARRA DE MENÚ -->
+    <div th:replace="barraMenu :: menu"></div>
+
+    <h1>Inventario de Bodega Mecánica Automotriz</h1>
+    <p class="bienvenida">Bienvenido al sistema de gestión y control de herramientas y equipo</p>
+
+    <!-- Formulario / Contenedor principal de captura -->
+    <form action="#" th:action="@{/catalogo/guardar}" th:object="${catalogoNuevo}" method="post">
+        <h3 class="titulo-form">Gestión de Productos</h3>
+        
+        <!-- CAMPO OCULTO DE ID -->
+        <input type="hidden" th:field="*{id}" />
+
+        <label>Nombre:</label>
+        <input type="text" th:field="*{nombre}" required />
+
+        <label>Categoría:</label>
+        <input type="text" th:field="*{categoria}" required />
+
+        <label>Descripción:</label>
+        <input type="text" th:field="*{descripcion}" />
+
+        <label>Cantidad:</label>
+        <input type="number" th:field="*{cantidad}" required />
+
+        <label>Disponibilidad:</label>
+        <input type="text" th:field="*{disponibilidad}" />
+
+        <label>Observación:</label>
+        <input type="text" th:field="*{observacion}" />
+
+        <!-- Botón centrado y pequeño -->
+        <div class="btn-contenedor">
+            <button type="submit">Guardar Producto</button>
+        </div>
+    </form>
+
+    <hr>
+
+    <!-- Encabezado de sección que alinea el título y el botón de préstamos a la par -->
+    <div class="seccion-header">
+        <h3 class="titulo-seccion">Productos Registrados en el Sistema</h3>
+        <a class="btn-prestamos-header" th:href="@{/prestamos}">Ver Préstamos Activos</a>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Categoría</th>
+                <th>Descripción</th>
+                <th>Cantidad</th>
+                <th>Disponibilidad</th>
+                <th>Observación</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="c : ${listaCatalogo}">
+                <td th:text="${c.id}">1</td>
+                <td th:text="${c.nombre}">Nombre</td>
+                <td th:text="${c.categoria}">Categoría</td>
+                <td th:text="${c.descripcion}">Descripción</td>
+                <td th:text="${c.cantidad}">0</td>
+                <td th:text="${c.disponibilidad}">Disponible</td>
+                <td th:text="${c.observacion}">Ninguna</td>
+                <td>
+                    <a class="btn-editar" th:href="@{/catalogo/editar/{id}(id=${c.id})}">Editar</a>
+                    <a class="btn-eliminar" th:href="@{/catalogo/eliminar/{id}(id=${c.id})}" onclick="return confirm('¿Estás seguro de eliminar este registro?');">Eliminar</a>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
 </body>
 </html>

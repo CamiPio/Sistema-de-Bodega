@@ -21,7 +21,7 @@ public class Prestamo {
 
     @NotNull(message = "El ID del producto es obligatorio.")
     @Column(nullable = false)
-    private Integer idProducto;
+    private Integer idProducto; // <--- Cambiado de int a Integer
 
     @NotBlank(message = "El nombre del solicitante es obligatorio.")
     @Column(nullable = false)
@@ -37,8 +37,8 @@ public class Prestamo {
     public Prestamo() {
     }
 
-    // Constructor completo
-    public Prestamo(int idPresamo, String fecha, int idProducto, String nombreSolicitante, boolean estadoActivo, String observacionEntrega) {
+    // Constructor completo (con Integer en idProducto)
+    public Prestamo(int idPresamo, String fecha, Integer idProducto, String nombreSolicitante, boolean estadoActivo, String observacionEntrega) {
         this.idPresamo = idPresamo;
         this.fecha = fecha;
         this.idProducto = idProducto;
@@ -64,11 +64,11 @@ public class Prestamo {
         this.fecha = fecha;
     }
 
-    public int getIdProducto() {
+    public Integer getIdProducto() { // <--- Retorna Integer
         return idProducto;
     }
 
-    public void setIdProducto(int idProducto) {
+    public void setIdProducto(Integer idProducto) { // <--- Recibe Integer
         this.idProducto = idProducto;
     }
 

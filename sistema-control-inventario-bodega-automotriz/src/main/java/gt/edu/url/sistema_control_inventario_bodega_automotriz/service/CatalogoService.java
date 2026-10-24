@@ -10,41 +10,37 @@ import gt.edu.url.sistema_control_inventario_bodega_automotriz.repository.Catalo
 @Service
 public class CatalogoService {
 
-    private final CatalogoRepository repositorio;
+    // Repositorio inyectado en lugar del ArrayList en memoria
+    private final CatalogoRepository catalogoRepository;
 
-    // Inyección de dependencias por constructor (Estándar de clase)
-    public CatalogoService(CatalogoRepository repositorio) {
-        this.repositorio = repositorio;
+    // Inyección mediante constructor
+    public CatalogoService(CatalogoRepository catalogoRepository) {
+        this.catalogoRepository = catalogoRepository;
     }
 
-    // Listar todos los registros desde la base de datos
+    public void guardar(Catalogo catalogo) {
+        // Validación: Si la disponibilidad viene vacía o nula, 
+        // le asigna automáticamente el mismo valor que tenga la cantidad total.
+        if (catalogo.getDisponibilidad() == null || catalogo.getDisponibilidad().trim().isEmpty()) {
+            catalogo.setDisponibilidad(String.valueOf(catalogo.getCantidad()));
+        }
+        
+        catalogoRepository.save(catalogo);
+    }
+
     public List<Catalogo> listarTodos() {
-        return repositorio.findAll();
+        return catalogoRepository.findAll();
     }
 
-    // Buscar por ID con manejo seguro de excepciones
+    public long contar() {
+        return catalogoRepository.count();
+    }
+
     public Catalogo buscarPorId(Long id) {
-        return repositorio.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("No existe un repuesto con id " + id));
+        return catalogoRepository.findById(id).orElse(null);
     }
 
-    // Guardar (Funciona tanto para INSERT como para UPDATE gracias al ID)
-    public Catalogo guardar(Catalogo catalogo) {
-        return repositorio.save(catalogo);
-    }
-
-    // Eliminar por ID
     public void eliminar(Long id) {
-        repositorio.deleteById(id);
-    }
-
-    // Retorna el total de registros convirtiendo el long de JPA a int
-    public int contar() {
-        return (int) repositorio.count();
-    }
-
-    // Busca por nombre
-    public Catalogo buscarPorNombre(String nombre) {
-        return repositorio.findByNombreIgnoreCase(nombre).orElse(null);
+        catalogoRepository.deleteById(id);
     }
 }

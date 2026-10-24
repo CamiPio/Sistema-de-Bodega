@@ -42,11 +42,19 @@ public class UsuarioController {
             return "login"; // Recarga la vista de login/registro mostrando los errores
         }
 
-        usuarioService.guardar(usuarioRegistro);
-        System.out.println("¡Usuario registrado con éxito: " + usuarioRegistro.getCorreo() + "!");
+        try {
+            usuarioService.guardar(usuarioRegistro);
+            System.out.println("¡Usuario registrado con éxito: " + usuarioRegistro.getCorreo() + "!");
+        } catch (RuntimeException e) {
+            // Capturamos el error de correo duplicado lanzado desde el servicio
+            model.addAttribute("errorRegistro", e.getMessage()); // Mensaje específico para el formulario de registro
+            model.addAttribute("usuarioLogin", new Usuario());   // Mantiene vivo el objeto de login
+            model.addAttribute("usuarioRegistro", usuarioRegistro); // Mantiene los datos que ingresó el usuario
+            return "login"; // Recarga la misma vista mostrando el error
+        }
         
-        // Te redirige al incio de sesión
-        return "redirect:/login?exito=true";
+        // Te redirige directamente a la lista de usuarios para visualizarlos
+        return "redirect:/usuarios/lista";
     }
 
     // Procesa el formulario de Inicio de Sesión
@@ -74,4 +82,5 @@ public class UsuarioController {
         model.addAttribute("total", lista.size());
         return "listaUsuarios"; // Apunta al archivo listaUsuarios.html en templates
     }
+    
 }

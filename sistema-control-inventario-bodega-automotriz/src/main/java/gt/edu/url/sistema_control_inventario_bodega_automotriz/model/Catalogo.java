@@ -5,16 +5,15 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-@Entity 
+@Entity
 public class Catalogo {
 
-@Id
+    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long idCatalogo;
+    private Long id;
 
     @NotBlank(message = "El nombre es obligatorio.")
     @Column(nullable = false)
@@ -24,25 +23,27 @@ public class Catalogo {
     @Column(nullable = false)
     private String categoria;
 
+    @NotBlank(message = "La descripción es obligatoria.")
+    @Column(nullable = false)
     private String descripcion;
 
     @NotNull(message = "La cantidad es obligatoria.")
-    @Min(value = 0, message = "La cantidad no puede ser negativa.")
     @Column(nullable = false)
     private Integer cantidad;
 
-    @NotBlank(message = "La disponibilidad es obligatoria.")
-    @Column(nullable = false)
+    // 💡 Quitamos la validación estricta @NotBlank para que pueda iniciar vacío
+    // y el servicio lo complete automáticamente con el valor de la cantidad.
     private String disponibilidad;
 
-    private String observacion;  
-    
+    private String observacion;
+
     // Constructor vacío
     public Catalogo() {
     }
 
     // Constructor completo
-    public Catalogo(Long idCatalogo, String nombre, String categoria, String descripcion, Integer cantidad, String disponibilidad, String observacion) {
+    public Catalogo(Long id, String nombre, String categoria, String descripcion, Integer cantidad, String disponibilidad, String observacion) {
+        this.id = id;
         this.nombre = nombre;
         this.categoria = categoria;
         this.descripcion = descripcion;
@@ -51,12 +52,13 @@ public class Catalogo {
         this.observacion = observacion;
     }
 
+    // Getters y Setters
     public Long getId() {
-        return idCatalogo;
+        return id;
     }
 
-    public void setId(Long idCatalogo) {
-        this.idCatalogo = idCatalogo;
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getNombre() {
