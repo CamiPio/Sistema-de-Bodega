@@ -2,6 +2,8 @@ package gt.edu.url.sistema_control_inventario_bodega_automotriz.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -33,6 +35,10 @@ public class Usuario {
     @Size(min = 6, message = "La contraseña debe tener al menos 6 caracteres.")
     @Column(nullable = false)
     private String contrasena;
+
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20)
+    private RolUsuario rol = RolUsuario.USUARIO;
 
     // Constructor vacío (necesario para frameworks como Spring/Jackson)
     public Usuario() {
@@ -89,5 +95,13 @@ public class Usuario {
 
     public void setContrasena(String contrasena) {
         this.contrasena = contrasena;
+    }
+
+    public RolUsuario getRol() {
+        return rol;
+    }
+
+    public void setRol(RolUsuario rol) {
+        this.rol = rol;
     }
 }

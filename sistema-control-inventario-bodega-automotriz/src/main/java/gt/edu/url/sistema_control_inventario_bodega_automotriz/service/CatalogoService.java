@@ -1,36 +1,46 @@
 package gt.edu.url.sistema_control_inventario_bodega_automotriz.service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
 
 import gt.edu.url.sistema_control_inventario_bodega_automotriz.model.Catalogo;
+import gt.edu.url.sistema_control_inventario_bodega_automotriz.repository.CatalogoRepository;
 
 @Service
 public class CatalogoService {
 
-    // La "memoria" de la aplicación: se vacía cada vez que reinicias.
-    private final List<Catalogo> catalogos = new ArrayList<>();
+    // Repositorio inyectado en lugar del ArrayList en memoria
+    private final CatalogoRepository catalogoRepository;
+
+    // Inyección mediante constructor
+    public CatalogoService(CatalogoRepository catalogoRepository) {
+        this.catalogoRepository = catalogoRepository;
+    }
 
     public void guardar(Catalogo catalogo) {
-        catalogos.add(catalogo);
+        // Validación: Si la disponibilidad viene vacía o nula, 
+        // le asigna automáticamente el mismo valor que tenga la cantidad total.
+        if (catalogo.getDisponibilidad() == null || catalogo.getDisponibilidad().trim().isEmpty()) {
+            catalogo.setDisponibilidad(String.valueOf(catalogo.getCantidad()));
+        }
+        
+        catalogoRepository.save(catalogo);
     }
 
     public List<Catalogo> listarTodos() {
-        return catalogos;
+        return catalogoRepository.findAll();
     }
 
-    public int contar() {
-        return catalogos.size();
+    public long contar() {
+        return catalogoRepository.count();
     }
 
-    public Catalogo buscarPorNombre(String nombre) {
-        for (Catalogo productoCatalogo : catalogos) {
-            if (productoCatalogo.getNombre().equalsIgnoreCase(nombre)) {
-                return productoCatalogo;
-            }
-        }
-        return null; // Retorna nulo si encuentra el nombre
+    public Catalogo buscarPorId(Long id) {
+        return catalogoRepository.findById(id).orElse(null);
+    }
+
+    public void eliminar(Long id) {
+        catalogoRepository.deleteById(id);
     }
 }

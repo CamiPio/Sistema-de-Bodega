@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Detalle de usuario - Bodega Automotriz</title>
+  <link rel="stylesheet" th:href="@{/barraMenu.css}" />
+  <link rel="stylesheet" th:href="@{/styles.css}" />
+</head>
+<body>
+  <div th:replace="barraMenu :: menu"></div>
+  <main>
+    <h1>Detalle de usuario</h1>
+    <dl>
+      <dt>Nombre</dt><dd th:text="${usuario.nombre}">Nombre</dd>
+      <dt>Apellido</dt><dd th:text="${usuario.apellido}">Apellido</dd>
+      <dt>Correo electrónico</dt><dd th:text="${usuario.correo}">correo@ejemplo.com</dd>
+      <dt>Rol</dt><dd th:text="${usuario.rol}">USUARIO</dd>
+    </dl>
+    <p>
+      <a th:href="@{/usuarios/editar/{id}(id=${usuario.id})}">Editar usuario</a>
+      <a th:href="@{/usuarios/lista}">Regresar a la lista</a>
+    </p>
+  </main>
+</body>
+</html>

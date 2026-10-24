@@ -1,0 +1,160 @@
+/* Estilos generales para la barra de menú */
+.barra-menu {
+    background-color: #1e293b;
+    color: #ffffff;
+    width: 100%;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.contenedor-menu {
+    width: 100%;
+    max-width: 100%; /* Permite que ocupe todo el ancho de la pantalla de lado a lado */
+    padding: 0 30px; /* Margen interno para que los elementos no peguen con los bordes de la pantalla */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 70px;
+    box-sizing: border-box;
+}
+
+/* Logo o título del sistema en el menú */
+.barra-menu .logo {
+    font-weight: bold;
+    font-size: 1.1rem;
+    color: #ffffff;
+    text-decoration: none;
+    letter-spacing: 0.5px;
+}
+
+/* Lista de accesos directos horizontal */
+.barra-menu .accesos-directos {
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin: 0;
+    padding: 0;
+}
+
+.barra-menu .accesos-directos li {
+    position: relative;
+}
+
+/* Enlaces y botones principales del menú */
+.barra-menu .accesos-directos a, 
+.barra-menu .accesos-directos button#opRecurso, 
+.barra-menu .accesos-directos button#opPerfil {
+    background: transparent;
+    border: none;
+    color: #cbd5e1;
+    font-size: 0.95rem;
+    font-weight: 500;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s ease-in-out;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.barra-menu .accesos-directos a:hover, 
+.barra-menu .accesos-directos button#opRecurso:hover, 
+.barra-menu .accesos-directos button#opPerfil:hover {
+    background-color: #334155;
+    color: #ffffff;
+}
+
+/* Menús desplegables (Dropdowns) ocultos por defecto */
+.barra-menu .lista-perfil {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background-color: #ffffff;
+    min-width: 180px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    border-radius: 8px;
+    padding: 8px 0;
+    z-index: 1100;
+    margin-top: 5px;
+}
+
+/* Estilo de los botones dentro de los desplegables */
+.barra-menu .lista-perfil button {
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    border: none;
+    color: #334155;
+    padding: 10px 16px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.barra-menu .lista-perfil button:hover {
+    background-color: #f1f5f9;
+    color: #0f172a;
+}
+
+/* Barra de búsqueda profesional */
+.contenedor-busqueda {
+    display: flex;
+    align-items: center;
+    background-color: #334155;
+    border-radius: 6px;
+    padding: 4px 10px;
+}
+
+.contenedor-busqueda input {
+    background: transparent;
+    border: none;
+    color: #ffffff;
+    outline: none;
+    padding: 4px;
+    font-size: 0.9rem;
+    width: 160px;
+}
+
+.contenedor-busqueda input::placeholder {
+    color: #94a3b8;
+}
+
+.contenedor-busqueda button {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 4px;
+    transition: color 0.2s;
+}
+
+.contenedor-busqueda button:hover {
+    color: #ffffff;
+}
+
+/* Botón de menú hamburguesa para móviles */
+.barra-menu .boton-menu {
+    display: none;
+    background: transparent;
+    border: none;
+    color: #ffffff;
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+/* Media Queries para responsividad */
+@media (max-width: 768px) {
+    .barra-menu .accesos-directos {
+        display: none;
+    }
+    .barra-menu .boton-menu {
+        display: block;
+    }
+}
