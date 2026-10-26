@@ -3,20 +3,24 @@ package gt.edu.url.sistema_control_inventario_bodega_automotriz.dto;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 
 public class UsuarioEdicionForm {
 
     @NotBlank(message = "El nombre es obligatorio.")
+    @Size(max = 100, message = "El nombre no puede exceder 100 caracteres.")
     private String nombre;
 
     @NotBlank(message = "El apellido es obligatorio.")
+    @Size(max = 100, message = "El apellido no puede exceder 100 caracteres.")
     private String apellido;
 
     @NotBlank(message = "El correo es obligatorio.")
     @Email(message = "Escribe un correo válido.")
+    @Size(max = 254, message = "El correo no puede exceder 254 caracteres.")
     private String correo;
 
-    @Pattern(regexp = "^$|.{6,}", message = "La contraseña debe tener al menos 6 caracteres.")
+    @Pattern(regexp = "^$|.{6,72}", message = "La contraseña debe tener entre 6 y 72 caracteres.")
     private String contrasena;
 
     public String getNombre() {

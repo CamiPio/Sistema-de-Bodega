@@ -1,31 +1,81 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const btnRecurso = document.getElementById('opRecurso');
-    const listaRecurso = document.getElementById('listaRecurso');
-    
-    const btnPerfil = document.getElementById('opPerfil');
-    const listaPerfil = document.getElementById('listaPerfil');
+const inicializarMenu = () => {
+    const barra = document.querySelector('.barra-menu');
+    if (!barra || barra.dataset.inicializada === 'true') {
+        return;
+    }
+    barra.dataset.inicializada = 'true';
 
-    // Desplegar menú de Acciones
-    if (btnRecurso && listaRecurso) {
-        btnRecurso.addEventListener('click', (e) => {
-            e.stopPropagation();
-            listaRecurso.style.display = listaRecurso.style.display === 'block' ? 'none' : 'block';
-            if (listaPerfil) listaPerfil.style.display = 'none';
+    const accesos = barra.querySelector('#accesosDirectos');
+    const botonMenu = barra.querySelector('#menuBtn');
+    const desplegables = [
+        [barra.querySelector('#opRecurso'), barra.querySelector('#listaRecurso')],
+        [barra.querySelector('#opPerfil'), barra.querySelector('#listaPerfil')]
+    ];
+
+    const cerrarDesplegables = () => {
+        desplegables.forEach(([boton, lista]) => {
+            if (boton && lista) {
+                lista.classList.remove('is-open');
+                boton.setAttribute('aria-expanded', 'false');
+            }
+        });
+    };
+
+    if (botonMenu && accesos) {
+        botonMenu.addEventListener('click', () => {
+            const abierto = accesos.classList.toggle('is-open');
+            botonMenu.setAttribute('aria-expanded', String(abierto));
+            if (!abierto) {
+                cerrarDesplegables();
+            }
         });
     }
 
-    // Desplegar menú de Perfil
-    if (btnPerfil && listaPerfil) {
-        btnPerfil.addEventListener('click', (e) => {
-            e.stopPropagation();
-            listaPerfil.style.display = listaPerfil.style.display === 'block' ? 'none' : 'block';
-            if (listaRecurso) listaRecurso.style.display = 'none';
-        });
-    }
+    desplegables.forEach(([boton, lista]) => {
+        if (!boton || !lista) {
+            return;
+        }
 
-    // Cerrar menús si se hace clic fuera de ellos
-    window.addEventListener('click', () => {
-        if (listaRecurso) listaRecurso.style.display = 'none';
-        if (listaPerfil) listaPerfil.style.display = 'none';
+        boton.addEventListener('click', (evento) => {
+            evento.stopPropagation();
+            const abierto = lista.classList.toggle('is-open');
+            boton.setAttribute('aria-expanded', String(abierto));
+            desplegables.forEach(([otroBoton, otraLista]) => {
+                if (otraLista && otraLista !== lista) {
+                    otraLista.classList.remove('is-open');
+                    otroBoton.setAttribute('aria-expanded', 'false');
+                }
+            });
+        });
     });
-});
+
+    document.addEventListener('click', (evento) => {
+        if (!barra.contains(evento.target)) {
+            cerrarDesplegables();
+            if (accesos) {
+                accesos.classList.remove('is-open');
+            }
+            if (botonMenu) {
+                botonMenu.setAttribute('aria-expanded', 'false');
+            }
+        }
+    });
+
+    document.addEventListener('keydown', (evento) => {
+        if (evento.key === 'Escape') {
+            cerrarDesplegables();
+            if (accesos) {
+                accesos.classList.remove('is-open');
+            }
+            if (botonMenu) {
+                botonMenu.setAttribute('aria-expanded', 'false');
+            }
+        }
+    });
+};
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', inicializarMenu, { once: true });
+} else {
+    inicializarMenu();
+}

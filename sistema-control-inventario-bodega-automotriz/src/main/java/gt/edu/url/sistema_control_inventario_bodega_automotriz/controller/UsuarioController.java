@@ -3,6 +3,14 @@ package gt.edu.url.sistema_control_inventario_bodega_automotriz.controller;
 import java.util.List;
 
 import gt.edu.url.sistema_control_inventario_bodega_automotriz.dto.UsuarioEdicionForm;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -16,6 +24,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import gt.edu.url.sistema_control_inventario_bodega_automotriz.model.RolUsuario;
 import gt.edu.url.sistema_control_inventario_bodega_automotriz.model.Usuario;
 import gt.edu.url.sistema_control_inventario_bodega_automotriz.service.UsuarioService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 
@@ -23,10 +33,12 @@ import jakarta.validation.Valid;
 public class UsuarioController {
 
     private final UsuarioService usuarioService;
+    private final SecurityContextRepository securityContextRepository;
 
-    // Inyección de dependencias del servicio de usuarios
-    public UsuarioController(UsuarioService usuarioService) {
+    public UsuarioController(UsuarioService usuarioService,
+                             SecurityContextRepository securityContextRepository) {
         this.usuarioService = usuarioService;
+        this.securityContextRepository = securityContextRepository;
     }
 
     // Muestra la pantalla principal de Login y Registro
@@ -35,6 +47,70 @@ public class UsuarioController {
         model.addAttribute("usuarioLogin", new Usuario());
         model.addAttribute("usuarioRegistro", new Usuario());
         return "login"; // Carga tu archivo login.html
+    }
+
+    @GetMapping("/acceso-denegado")
+    public String mostrarAccesoDenegado() {
+        return "acceso-denegado";
+    }
+
+    @GetMapping("/perfil")
+    public String mostrarPerfil(Authentication authentication, Model model) {
+        Usuario usuario = usuarioActual(authentication);
+        model.addAttribute("usuarioForm", formularioDe(usuario));
+        return "perfil";
+    }
+
+    @PostMapping("/perfil")
+    public String actualizarPerfil(@Valid @ModelAttribute("usuarioForm") UsuarioEdicionForm formulario,
+                                   BindingResult bindingResult, Authentication authentication,
+                                   HttpServletRequest request, HttpServletResponse response,
+                                   HttpSession session, Model model,
+                                   RedirectAttributes redirectAttributes) {
+        Usuario actual = usuarioActual(authentication);
+        if (bindingResult.hasErrors()) {
+            return "perfil";
+        }
+
+        try {
+            Usuario actualizado = usuarioService.actualizar(actual.getId(), formulario.getNombre(),
+                    formulario.getApellido(), formulario.getCorreo(), formulario.getContrasena());
+            actualizarAutenticacion(actualizado, request, response);
+            session.setAttribute("usuarioId", actualizado.getId());
+            session.setAttribute("usuarioRol", actualizado.getRol().name());
+            redirectAttributes.addFlashAttribute("mensajePerfil", "Tu perfil se actualizó correctamente.");
+            return "redirect:/perfil";
+        } catch (RuntimeException e) {
+            model.addAttribute("errorPerfil", e.getMessage());
+            return "perfil";
+        }
+    }
+
+    private Usuario usuarioActual(Authentication authentication) {
+        return usuarioService.buscarPorCorreo(authentication.getName())
+                .orElseThrow(() -> new IllegalStateException("No se encontró el usuario autenticado."));
+    }
+
+    private UsuarioEdicionForm formularioDe(Usuario usuario) {
+        UsuarioEdicionForm formulario = new UsuarioEdicionForm();
+        formulario.setNombre(usuario.getNombre());
+        formulario.setApellido(usuario.getApellido());
+        formulario.setCorreo(usuario.getCorreo());
+        return formulario;
+    }
+
+    private void actualizarAutenticacion(Usuario usuario, HttpServletRequest request,
+                                        HttpServletResponse response) {
+        UserDetails principal = User.withUsername(usuario.getCorreo())
+                .password(usuario.getContrasena())
+                .authorities("ROLE_" + usuario.getRol().name())
+                .build();
+        Authentication autenticacion = UsernamePasswordAuthenticationToken.authenticated(
+                principal, null, principal.getAuthorities());
+        SecurityContext contexto = SecurityContextHolder.createEmptyContext();
+        contexto.setAuthentication(autenticacion);
+        SecurityContextHolder.setContext(contexto);
+        securityContextRepository.saveContext(contexto, request, response);
     }
 
     // Procesa el formulario de Registro con validaciones activas
@@ -63,25 +139,6 @@ public class UsuarioController {
         // Te redirige directamente a la lista de usuarios para visualizarlos
         redirectAttributes.addFlashAttribute("mensajeRegistro", "Cuenta creada. Ya puedes iniciar sesión.");
         return "redirect:/login";
-    }
-
-    // Procesa el formulario de Inicio de Sesión
-    @PostMapping("/auth/login")
-    public String procesarLogin(@ModelAttribute Usuario usuarioLogin, Model model, HttpSession session) {
-        Usuario usuarioEncontrado = usuarioService.validarLogin(usuarioLogin.getCorreo(), usuarioLogin.getContrasena());
-        
-        if (usuarioEncontrado != null) {
-            session.setAttribute("usuarioId", usuarioEncontrado.getId());
-            session.setAttribute("usuarioRol", usuarioEncontrado.getRol().name());
-            // Si las credenciales son correctas, redirige al catálogo de la bodega
-            return "redirect:/catalogo";
-        } else {
-            // Si fallan, recarga el login enviando un mensaje de error
-            model.addAttribute("error", "Correo o contraseña incorrectos");
-            model.addAttribute("usuarioLogin", new Usuario());
-            model.addAttribute("usuarioRegistro", new Usuario());
-            return "login";
-        }
     }
 
     // Muestra la lista de usuarios registrados
@@ -167,10 +224,4 @@ public class UsuarioController {
         return "redirect:/usuarios/lista";
     }
 
-    @PostMapping("/auth/logout")
-    public String cerrarSesion(HttpSession session) {
-        session.invalidate();
-        return "redirect:/login";
-    }
-    
 }

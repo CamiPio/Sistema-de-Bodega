@@ -28,41 +28,38 @@
 
                     <!-- Acciones para los recursos -->
                     <li style="position: relative;">
-                        <button id="opRecurso">Acciones</button>
+                        <button id="opRecurso" type="button" aria-expanded="false" aria-controls="listaRecurso">Acciones</button>
                         <div id="listaRecurso" class="lista-perfil">
-                            <button onclick="window.location.href='/catalogo'">Ver Catálogo</button>
-                            <button th:if="${session.usuarioRol == 'ADMIN'}" onclick="window.location.href='/usuarios/lista'">Ver Usuarios</button>
+                            <a th:href="@{/catalogo}">Ver Catálogo</a>
+                            <a th:if="${session.usuarioRol == 'ADMIN'}" th:href="@{/usuarios/lista}">Ver Usuarios</a>
                         </div>
                     </li>
 
                     <!-- Lista dentro de Perfil -->
                     <li style="position: relative;">
-                        <button id="opPerfil">Perfil</button>
+                        <button id="opPerfil" type="button" aria-expanded="false" aria-controls="listaPerfil">Perfil</button>
                         <div id="listaPerfil" class="lista-perfil">
-                            <!-- Redirige al login o cierre de sesión de tu aplicación -->
+                            <a th:href="@{/perfil}">Editar mi perfil</a>
                             <form th:action="@{/auth/logout}" method="post">
                                 <button type="submit">Cerrar Sesión</button>
                             </form>
-                            <button onclick="window.location.href='#'">Editar mi perfil</button>
                         </div>
                     </li>
                 </ul>
 
                 <!-- Barra de búsqueda -->
-                <div class="contenedor-busqueda">
-                    <input type="text" placeholder="Buscar...">
-                    <button id="buscarBtn"><i class="fas fa-search"></i></button>
-                </div>
+                <form class="contenedor-busqueda" th:action="@{/catalogo}" method="get" role="search">
+                    <input type="search" name="q" th:value="${busqueda}" placeholder="Buscar herramientas..."
+                           aria-label="Buscar herramientas" maxlength="100">
+                    <button id="buscarBtn" type="submit" aria-label="Buscar"><i class="fas fa-search"></i></button>
+                </form>
 
-                <button class="boton-menu" id="menuBtn">
+                <button class="boton-menu" id="menuBtn" type="button" aria-expanded="false" aria-controls="accesosDirectos" aria-label="Abrir menú de navegación">
                     ☰
                 </button>
             </div>
         </nav>
+        <script th:src="@{/barraMenu.js}" defer></script>
     </div>
-
-    <!-- Script estático con sintaxis de Thymeleaf -->
-    <script th:src="@{/barraMenu.js}"></script>
-    
 </body>
 </html>

@@ -14,19 +14,19 @@
     <p th:if="${errorUsuario}" th:text="${errorUsuario}" role="alert"></p>
     <form th:action="@{/usuarios/editar/{id}(id=${usuarioId})}" th:object="${usuarioForm}" method="post">
       <label for="nombre">Nombre</label>
-      <input id="nombre" type="text" th:field="*{nombre}" required />
+      <input id="nombre" type="text" th:field="*{nombre}" maxlength="100" required />
       <p th:errors="*{nombre}" role="alert"></p>
 
       <label for="apellido">Apellido</label>
-      <input id="apellido" type="text" th:field="*{apellido}" required />
+      <input id="apellido" type="text" th:field="*{apellido}" maxlength="100" required />
       <p th:errors="*{apellido}" role="alert"></p>
 
       <label for="correo">Correo</label>
-      <input id="correo" type="email" th:field="*{correo}" required />
+      <input id="correo" type="email" th:field="*{correo}" maxlength="254" required />
       <p th:errors="*{correo}" role="alert"></p>
 
       <label for="contrasena">Nueva contraseña (opcional)</label>
-      <input id="contrasena" type="password" th:field="*{contrasena}" minlength="6" autocomplete="new-password" />
+      <input id="contrasena" type="password" th:field="*{contrasena}" minlength="6" maxlength="72" autocomplete="new-password" />
       <p th:errors="*{contrasena}" role="alert"></p>
 
       <button type="submit">Guardar cambios</button>

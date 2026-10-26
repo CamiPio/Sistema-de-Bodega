@@ -21,23 +21,20 @@ public class UsuarioService {
         this.repositorio = repositorio;
         this.passwordEncoder = passwordEncoder;
 
-        // Si la base de datos está totalmente vacía, creamos e insertamos el admin por defecto
-        if (repositorio.count() == 0) {
-            Usuario admin = new Usuario();
-            admin.setNombre("Admin");
-            admin.setApellido("General");
-            admin.setCorreo("admin@bodega.com");
-            admin.setContrasena(passwordEncoder.encode("123456789012"));
-            admin.setRol(RolUsuario.ADMIN);
-            repositorio.save(admin);
-        } else {
-            for (Usuario usuario : repositorio.findAll()) {
-                if (usuario.getRol() == null) {
-                    usuario.setRol("admin@bodega.com".equalsIgnoreCase(usuario.getCorreo())
-                            ? RolUsuario.ADMIN
-                            : RolUsuario.USUARIO);
-                    repositorio.save(usuario);
-                }
+        for (Usuario usuario : repositorio.findAll()) {
+            boolean necesitaGuardar = false;
+            if (usuario.getRol() == null) {
+                usuario.setRol("admin@bodega.com".equalsIgnoreCase(usuario.getCorreo())
+                        ? RolUsuario.ADMIN
+                        : RolUsuario.USUARIO);
+                necesitaGuardar = true;
+            }
+            if (usuario.getContrasena() != null && !esHashBcrypt(usuario.getContrasena())) {
+                usuario.setContrasena(passwordEncoder.encode(usuario.getContrasena()));
+                necesitaGuardar = true;
+            }
+            if (necesitaGuardar) {
+                repositorio.save(usuario);
             }
         }
     }

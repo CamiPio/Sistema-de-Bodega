@@ -11,7 +11,6 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
-
 @Entity
 public class Usuario {
     @Id
@@ -19,20 +18,23 @@ public class Usuario {
     private Long idUsuario;
 
     @NotBlank(message = "El nombre es obligatorio.")
-    @Column(nullable = false)
+    @Size(max = 100, message = "El nombre no puede exceder 100 caracteres.")
+    @Column(nullable = false, length = 100)
     private String nombre;
 
     @NotBlank(message = "El apellido es obligatorio.")
-    @Column(nullable = false)
+    @Size(max = 100, message = "El apellido no puede exceder 100 caracteres.")
+    @Column(nullable = false, length = 100)
     private String apellido;
 
     @NotBlank(message = "El correo es obligatorio.")
     @Email(message = "Escribe un correo válido.")
-    @Column(nullable = false, unique = true)
+    @Size(max = 254, message = "El correo no puede exceder 254 caracteres.")
+    @Column(nullable = false, unique = true, length = 254)
     private String correo;
 
     @NotBlank(message = "La contraseña es obligatoria.")
-    @Size(min = 6, message = "La contraseña debe tener al menos 6 caracteres.")
+    @Size(min = 6, max = 72, message = "La contraseña debe tener entre 6 y 72 caracteres.")
     @Column(nullable = false)
     private String contrasena;
 
