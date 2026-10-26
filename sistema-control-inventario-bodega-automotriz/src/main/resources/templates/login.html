@@ -16,14 +16,15 @@
         <!-- CAJA DE INICIO DE SESIÓN -->
         <div class="caja-formulario login">
             <form th:action="@{/auth/login}" th:object="${usuarioLogin}" method="post">
-                <h1>Inicio de Sesión</h1>   
+                <h1>Inicio de Sesión</h1>
+                <p th:if="${param.error}" role="alert">Correo o contraseña incorrectos</p>
                 <div class="ingreso-datos">
-                    <input type="email" th:field="*{correo}" placeholder="Correo electrónico" required>
+                    <input type="email" th:field="*{correo}" maxlength="254" placeholder="Correo electrónico" required>
                     <svg><i class="fa-solid fa-user"></i></svg>
                  </div>
                 
                  <div class="ingreso-datos">
-                    <input type="password" th:field="*{contrasena}" placeholder="Contraseña" minlength="6" required>
+                    <input type="password" th:field="*{contrasena}" placeholder="Contraseña" minlength="6" maxlength="72" required>
                     <svg><i class="fa-solid fa-lock"></i></svg>
                 </div>
 
@@ -39,22 +40,26 @@
                 <p th:if="${errorRegistro}" th:text="${errorRegistro}" role="alert"></p>
                 
                 <div class="ingreso-datos">
-                    <input type="email" th:field="*{correo}" placeholder="Correo electrónico" required>
+                    <input type="email" th:field="*{correo}" maxlength="254" placeholder="Correo electrónico" required>
+                    <span th:errors="*{correo}" role="alert"></span>
                     <svg><i class="fa-solid fa-envelope"></i></svg>
                  </div>
 
                  <div class="ingreso-datos">
-                    <input type="text" th:field="*{nombre}" placeholder="Nombre" required>
+                    <input type="text" th:field="*{nombre}" maxlength="100" placeholder="Nombre" required>
+                    <span th:errors="*{nombre}" role="alert"></span>
                     <svg><i class="fa-solid fa-user"></i></svg>
                  </div>
 
                  <div class="ingreso-datos">
-                    <input type="text" th:field="*{apellido}" placeholder="Apellido" required>
+                    <input type="text" th:field="*{apellido}" maxlength="100" placeholder="Apellido" required>
+                    <span th:errors="*{apellido}" role="alert"></span>
                     <svg><i class="fa-solid fa-user"></i></svg>
                  </div>
                 
                  <div class="ingreso-datos">
-                    <input type="password" th:field="*{contrasena}" placeholder="Contraseña (Mín. 6 caracteres)" minlength="6" required>
+                    <input type="password" th:field="*{contrasena}" placeholder="Contraseña (6-72 caracteres)" minlength="6" maxlength="72" required>
+                    <span th:errors="*{contrasena}" role="alert"></span>
                     <svg><i class="fa-solid fa-lock"></i></svg>
                 </div>
 

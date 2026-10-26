@@ -172,6 +172,21 @@
         .btn-editar:hover, .btn-eliminar:hover {
             text-decoration: underline;
         }
+
+        .mensaje {
+            max-width: 700px;
+            margin: 12px auto;
+            padding: 10px;
+            border-radius: 5px;
+            background: #e7f5ea;
+            color: #155724;
+        }
+
+        .error-campo {
+            color: #b02a37;
+            display: block;
+            font-size: 0.9em;
+        }
     </style>
 </head>
 <body>
@@ -182,35 +197,46 @@
     <h1>Inventario de Bodega Mecánica Automotriz</h1>
     <p class="bienvenida">Bienvenido al sistema de gestión y control de herramientas y equipo</p>
     <p th:if="${param.accesoDenegado}" role="alert">No tienes permisos para realizar esa acción.</p>
+    <p class="mensaje" th:if="${mensajeCatalogo}" th:text="${mensajeCatalogo}" role="status"></p>
+    <p th:if="${errorCatalogo}" th:text="${errorCatalogo}" role="alert"></p>
+    <p th:if="${busqueda != null and !busqueda.isBlank() and #lists.isEmpty(listaCatalogo)}" role="status">
+        No se encontraron herramientas para "<span th:text="${busqueda}"></span>".
+    </p>
 
     <!-- Formulario / Contenedor principal de captura -->
-    <form action="#" th:action="@{/catalogo/guardar}" th:object="${catalogoNuevo}" method="post">
-        <h3 class="titulo-form">Gestión de Productos</h3>
+    <form th:if="${session.usuarioRol == 'ADMIN'}" th:action="@{/catalogo/guardar}" th:object="${catalogoNuevo}" method="post">
+        <h3 class="titulo-form" th:text="*{id} == null ? 'Registrar herramienta' : 'Editar herramienta'">Gestión de Herramientas</h3>
+        <p class="error-campo" th:each="error : ${#fields.globalErrors()}" th:text="${error}"></p>
         
-        <!-- CAMPO OCULTO DE ID -->
         <input type="hidden" th:field="*{id}" />
+        <span class="error-campo" th:errors="*{id}"></span>
 
         <label>Nombre:</label>
-        <input type="text" th:field="*{nombre}" required />
+        <input type="text" th:field="*{nombre}" maxlength="100" required />
+        <span class="error-campo" th:errors="*{nombre}"></span>
 
         <label>Categoría:</label>
-        <input type="text" th:field="*{categoria}" required />
+        <input type="text" th:field="*{categoria}" maxlength="80" required />
+        <span class="error-campo" th:errors="*{categoria}"></span>
 
         <label>Descripción:</label>
-        <input type="text" th:field="*{descripcion}" />
+        <input type="text" th:field="*{descripcion}" maxlength="500" required />
+        <span class="error-campo" th:errors="*{descripcion}"></span>
 
         <label>Cantidad:</label>
-        <input type="number" th:field="*{cantidad}" required />
+        <input type="number" th:field="*{cantidad}" min="0" max="2147483647" required />
+        <span class="error-campo" th:errors="*{cantidad}"></span>
 
         <label>Disponibilidad:</label>
-        <input type="text" th:field="*{disponibilidad}" />
+        <input type="number" th:value="*{disponibilidad}" min="0" th:attr="max=*{cantidad}" disabled />
+        <small>La disponibilidad se actualiza automáticamente al registrar préstamos y devoluciones.</small>
 
         <label>Observación:</label>
-        <input type="text" th:field="*{observacion}" />
+        <input type="text" th:field="*{observacion}" maxlength="500" />
 
-        <!-- Botón centrado y pequeño -->
         <div class="btn-contenedor">
-            <button type="submit">Guardar Producto</button>
+            <button type="submit" th:text="*{id} == null ? 'Registrar herramienta' : 'Guardar cambios'">Guardar herramienta</button>
+            <a th:if="*{id} != null" th:href="@{/catalogo}">Cancelar</a>
         </div>
     </form>
 
@@ -232,7 +258,7 @@
                 <th>Cantidad</th>
                 <th>Disponibilidad</th>
                 <th>Observación</th>
-                <th>Acciones</th>
+                <th th:if="${session.usuarioRol == 'ADMIN'}">Acciones</th>
             </tr>
         </thead>
         <tbody>
@@ -244,9 +270,11 @@
                 <td th:text="${c.cantidad}">0</td>
                 <td th:text="${c.disponibilidad}">Disponible</td>
                 <td th:text="${c.observacion}">Ninguna</td>
-                <td>
+                <td th:if="${session.usuarioRol == 'ADMIN'}">
                     <a class="btn-editar" th:href="@{/catalogo/editar/{id}(id=${c.id})}">Editar</a>
-                    <a class="btn-eliminar" th:href="@{/catalogo/eliminar/{id}(id=${c.id})}" onclick="return confirm('¿Estás seguro de eliminar este registro?');">Eliminar</a>
+                    <form th:action="@{/catalogo/eliminar/{id}(id=${c.id})}" method="post" style="display:inline; padding:0; margin:0; box-shadow:none" onsubmit="return confirm('¿Estás seguro de eliminar esta herramienta?');">
+                        <button type="submit" class="btn-eliminar" style="background:none; border:0; padding:0">Eliminar</button>
+                    </form>
                 </td>
             </tr>
         </tbody>

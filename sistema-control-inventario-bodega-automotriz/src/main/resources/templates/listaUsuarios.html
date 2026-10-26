@@ -99,9 +99,11 @@
       </tbody>
     </table>
 
-    <p style="margin-top: 30px;">
-      <a th:href="@{/login}" style="background-color: #0056b3; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none; display: inline-block; font-weight: bold;">Regresar al Login / Registro</a>
-    </p>
+    <div style="margin-top: 30px;">
+      <form th:action="@{/auth/logout}" method="post" style="display: inline;">
+        <button type="submit" style="background-color: #0056b3; color: white; padding: 10px 20px; border-radius: 5px; border: 0; font-weight: bold; cursor: pointer;">Cerrar sesión y regresar al Login / Registro</button>
+      </form>
+    </div>
   </main>
 
 </body>

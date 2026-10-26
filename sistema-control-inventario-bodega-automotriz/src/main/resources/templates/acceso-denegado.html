@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Acceso Denegado</title>
+  <link rel="stylesheet" th:href="@{/styles.css}">
+</head>
+<body>
+<main>
+  <h1>Instituto Técnico Industrial</h1>
+  <div class="aviso error" role="alert">
+    <p><strong>No tienes permiso para esta acción.</strong></p>
+    <p>Tu usuario no cuenta con el rol de administrador para realizar cambios.</p>
+  </div>
+  <p><a th:href="@{/catalogo}">Volver al catálogo</a></p>
+</main>
+</body>
+</html>

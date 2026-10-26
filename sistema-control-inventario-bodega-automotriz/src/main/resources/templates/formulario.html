@@ -19,22 +19,22 @@
     <form action="#" th:action="@{/catalogo/guardar}" th:object="${catalogo}" method="post">
         
         <label>Nombre:</label>
-        <input type="text" th:field="*{nombre}" required />
+        <input type="text" th:field="*{nombre}" maxlength="100" required />
 
         <label>Categoría:</label>
-        <input type="text" th:field="*{categoria}" required />
+        <input type="text" th:field="*{categoria}" maxlength="80" required />
 
         <label>Descripción:</label>
-        <input type="text" th:field="*{descripcion}" />
+        <input type="text" th:field="*{descripcion}" maxlength="500" required />
 
         <label>Cantidad:</label>
-        <input type="number" th:field="*{cantidad}" required />
+        <input type="number" th:field="*{cantidad}" min="0" max="2147483647" required />
 
         <label>Disponibilidad:</label>
-        <input type="text" th:field="*{disponibilidad}" />
+        <input type="number" th:value="*{disponibilidad}" min="0" max="2147483647" disabled />
 
         <label>Observación:</label>
-        <input type="text" th:field="*{observacion}" />
+        <input type="text" th:field="*{observacion}" maxlength="500" />
 
         <button type="submit">Guardar Producto</button>
     </form>

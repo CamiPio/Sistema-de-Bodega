@@ -98,6 +98,8 @@
   </div>
 
   <h2 style="color: #003366;">Listado de Préstamos Activos</h2>
+  <p th:if="${mensajePrestamo}" th:text="${mensajePrestamo}" role="status"></p>
+  <p th:if="${errorPrestamo}" th:text="${errorPrestamo}" role="alert"></p>
 
   <table>
     <thead>
@@ -125,8 +127,8 @@
         <td th:text="${p.observacionEntrega}">Sin observaciones</td>
         <td>
           <!-- Formulario individual para la devolución apuntando a idPresamo -->
-          <form th:action="@{/prestamos/devolver/{id}(id=${p.idPresamo})}" method="POST">
-            <input type="text" name="observacionEntrega" class="input-obs" placeholder="Ej. Buen estado / Mantenimiento" required />
+          <form th:if="${p.estadoActivo}" th:action="@{/prestamos/devolver/{id}(id=${p.idPresamo})}" method="POST">
+            <input type="text" name="observacionEntrega" class="input-obs" maxlength="500" placeholder="Ej. Buen estado / Mantenimiento" required />
             <button type="submit" class="btn-return">Marcar como Entregado</button>
           </form>
         </td>

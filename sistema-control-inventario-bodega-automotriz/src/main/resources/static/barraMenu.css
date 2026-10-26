@@ -3,9 +3,9 @@
     background-color: #1e293b;
     color: #ffffff;
     width: 100%;
-    position: sticky;
     top: 0;
     z-index: 1000;
+    position: sticky;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
@@ -85,6 +85,10 @@
     margin-top: 5px;
 }
 
+.barra-menu .lista-perfil.is-open {
+    display: block;
+}
+
 /* Estilo de los botones dentro de los desplegables */
 .barra-menu .lista-perfil button {
     width: 100%;
@@ -94,11 +98,41 @@
     color: #334155;
     padding: 10px 16px;
     font-size: 0.9rem;
+    line-height: 20px;
+    min-height: 40px;
+    box-sizing: border-box;
+    display: block;
     cursor: pointer;
     transition: background 0.2s;
 }
 
+.barra-menu .lista-perfil a {
+    display: block;
+    padding: 10px 16px;
+    color: #334155;
+    font-size: 0.9rem;
+    line-height: 20px;
+    min-height: 40px;
+    box-sizing: border-box;
+    text-decoration: none;
+}
+
+.barra-menu .lista-perfil form {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    border-radius: 0;
+    box-shadow: none;
+}
+
 .barra-menu .lista-perfil button:hover {
+    background-color: #f1f5f9;
+    color: #0f172a;
+}
+
+.barra-menu .lista-perfil a:hover {
     background-color: #f1f5f9;
     color: #0f172a;
 }
@@ -110,6 +144,16 @@
     background-color: #334155;
     border-radius: 6px;
     padding: 4px 10px;
+}
+
+.barra-menu .contenedor-busqueda {
+    width: auto;
+    max-width: 240px;
+    margin: 0;
+    padding: 4px 10px;
+    background-color: #334155;
+    border-radius: 6px;
+    box-shadow: none;
 }
 
 .contenedor-busqueda input {
@@ -126,7 +170,7 @@
     color: #94a3b8;
 }
 
-.contenedor-busqueda button {
+.barra-menu .contenedor-busqueda button {
     background: transparent;
     border: none;
     color: #94a3b8;
@@ -135,7 +179,7 @@
     transition: color 0.2s;
 }
 
-.contenedor-busqueda button:hover {
+.barra-menu .contenedor-busqueda button:hover {
     color: #ffffff;
 }
 
@@ -153,6 +197,39 @@
 @media (max-width: 768px) {
     .barra-menu .accesos-directos {
         display: none;
+        position: absolute;
+        top: 70px;
+        left: 0;
+        right: 0;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 4px;
+        padding: 12px 20px;
+        background-color: #1e293b;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+        box-sizing: border-box;
+    }
+    .barra-menu .accesos-directos.is-open {
+        display: flex;
+    }
+    .barra-menu .accesos-directos > li {
+        width: 100%;
+    }
+    .barra-menu .accesos-directos > li > a,
+    .barra-menu .accesos-directos > li > button {
+        width: 100%;
+        justify-content: flex-start;
+        text-align: left;
+    }
+    .barra-menu .lista-perfil {
+        position: static;
+        width: 100%;
+        box-sizing: border-box;
+        margin-top: 4px;
+    }
+    .barra-menu .contenedor-busqueda {
+        flex: 1;
+        max-width: 220px;
     }
     .barra-menu .boton-menu {
         display: block;

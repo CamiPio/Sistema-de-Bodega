@@ -35,7 +35,6 @@ class UsuarioServiceTest {
 
     @BeforeEach
     void configurar() {
-        when(repositorio.count()).thenReturn(1L);
         when(repositorio.findAll()).thenReturn(List.of());
         usuarioService = new UsuarioService(repositorio, passwordEncoder);
     }
@@ -79,6 +78,22 @@ class UsuarioServiceTest {
 
         assertSame(usuario, autenticado);
         assertTrue(autenticado.getContrasena().startsWith("$2a$"));
+    }
+
+    @Test
+    void migracionInicialHasheaContrasenasHeredadasYAsignaRol() {
+        Usuario usuario = new Usuario();
+        usuario.setCorreo("persona@ejemplo.com");
+        usuario.setContrasena("clave-antigua");
+        when(repositorio.findAll()).thenReturn(List.of(usuario));
+        when(passwordEncoder.encode("clave-antigua")).thenReturn("$2a$hash-migrado");
+        when(repositorio.save(usuario)).thenReturn(usuario);
+
+        new UsuarioService(repositorio, passwordEncoder);
+
+        assertEquals("$2a$hash-migrado", usuario.getContrasena());
+        assertEquals(RolUsuario.USUARIO, usuario.getRol());
+        verify(repositorio).save(usuario);
     }
 
     @Test

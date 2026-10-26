@@ -2,53 +2,94 @@ package gt.edu.url.sistema_control_inventario_bodega_automotriz.controller;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import gt.edu.url.sistema_control_inventario_bodega_automotriz.model.Catalogo;
 import gt.edu.url.sistema_control_inventario_bodega_automotriz.service.CatalogoService;
-import jakarta.validation.Valid; // Asegúrate de tener tu servicio de catálogo
+import gt.edu.url.sistema_control_inventario_bodega_automotriz.service.PrestamoService;
+import jakarta.validation.Valid;
 
 @Controller
 public class CatalogoController {
 
     private final CatalogoService catalogoService;
+    private final PrestamoService prestamoService;
 
-    public CatalogoController(CatalogoService catalogoService) {
+    public CatalogoController(CatalogoService catalogoService, PrestamoService prestamoService) {
         this.catalogoService = catalogoService;
+        this.prestamoService = prestamoService;
     }
 
-    // Este es el método que responde cuando el login hace redirect:/catalogo
     @GetMapping("/catalogo")
-    public String mostrarCatalogo(Model model) {
-        model.addAttribute("listaCatalogo", catalogoService.listarTodos());
-        model.addAttribute("catalogoNuevo", new Catalogo()); // Objeto para el formulario de registro de repuestos
-        return "catalogo"; // Busca el archivo catalogo.html en src/main/resources/templates/
+    public String mostrarCatalogo(@RequestParam(required = false) String q, Model model) {
+        cargarCatalogo(model, new Catalogo());
+        model.addAttribute("busqueda", q == null ? "" : q);
+        model.addAttribute("listaCatalogo", catalogoService.buscar(q));
+        return "catalogo";
     }
 
-    // Método para procesar el guardado de un nuevo elemento en el catálogo
     @PostMapping("/catalogo/guardar")
-    public String guardarCatalogo(@Valid @ModelAttribute("catalogoNuevo") Catalogo catalogo) {
-        catalogoService.guardar(catalogo);
-        return "redirect:/catalogo"; // Recarga la página para mostrar el cambio
-    }
+    public String guardarCatalogo(@Valid @ModelAttribute("catalogoNuevo") Catalogo catalogo,
+                                  BindingResult bindingResult, Model model,
+                                  RedirectAttributes redirectAttributes) {
+        if (catalogo.getId() != null && catalogoService.buscarPorId(catalogo.getId()) == null) {
+            bindingResult.rejectValue("id", "catalogo.noExiste", "El elemento que intentas editar ya no existe.");
+        }
+        if (bindingResult.hasErrors()) {
+            cargarCatalogo(model, catalogo);
+            return "catalogo";
+        }
 
-    // Ruta para mostrar el formulario con los datos cargados para editar
-    @GetMapping("/catalogo/editar/{id}")
-    public String mostrarFormularioEditar(@PathVariable Long id, Model model) {
-        Catalogo catalogoExistente = catalogoService.buscarPorId(id);
-        model.addAttribute("catalogoNuevo", catalogoExistente);
-        model.addAttribute("listaCatalogo", catalogoService.listarTodos());
-        return "catalogo"; // Reutiliza la misma vista para actualizar
-    }
-
-    // Ruta para eliminar un producto por su ID
-    @GetMapping("/catalogo/eliminar/{id}")
-    public String eliminarCatalogo(@PathVariable Long id) {
-        catalogoService.eliminar(id);
+        boolean esEdicion = catalogo.getId() != null;
+        try {
+            catalogoService.guardar(catalogo);
+        } catch (IllegalArgumentException e) {
+            bindingResult.reject("catalogo.invalido", e.getMessage());
+            cargarCatalogo(model, catalogo);
+            return "catalogo";
+        }
+        redirectAttributes.addFlashAttribute("mensajeCatalogo",
+                esEdicion ? "Herramienta actualizada correctamente." : "Herramienta registrada correctamente.");
         return "redirect:/catalogo";
     }
 
+    @GetMapping("/catalogo/editar/{id}")
+    public String mostrarFormularioEditar(@PathVariable Long id, Model model,
+                                           RedirectAttributes redirectAttributes) {
+        Catalogo catalogoExistente = catalogoService.buscarPorId(id);
+        if (catalogoExistente == null) {
+            redirectAttributes.addFlashAttribute("errorCatalogo", "No se encontró la herramienta solicitada.");
+            return "redirect:/catalogo";
+        }
+        model.addAttribute("catalogoNuevo", catalogoExistente);
+        model.addAttribute("listaCatalogo", catalogoService.listarTodos());
+        return "catalogo";
+    }
+
+    @PostMapping("/catalogo/eliminar/{id}")
+    public String eliminarCatalogo(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        if (catalogoService.buscarPorId(id) == null) {
+            redirectAttributes.addFlashAttribute("errorCatalogo", "No se encontró la herramienta que deseas eliminar.");
+            return "redirect:/catalogo";
+        }
+        if (prestamoService.tienePrestamosActivos(id)) {
+            redirectAttributes.addFlashAttribute("errorCatalogo",
+                    "No puedes eliminar una herramienta que tiene préstamos activos.");
+            return "redirect:/catalogo";
+        }
+        catalogoService.eliminar(id);
+        redirectAttributes.addFlashAttribute("mensajeCatalogo", "Herramienta eliminada correctamente.");
+        return "redirect:/catalogo";
+    }
+
+    private void cargarCatalogo(Model model, Catalogo catalogo) {
+        model.addAttribute("catalogoNuevo", catalogo);
+        model.addAttribute("listaCatalogo", catalogoService.listarTodos());
+    }
 }

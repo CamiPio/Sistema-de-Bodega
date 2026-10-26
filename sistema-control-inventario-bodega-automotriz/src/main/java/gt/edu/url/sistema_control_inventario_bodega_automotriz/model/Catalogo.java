@@ -1,12 +1,16 @@
 package gt.edu.url.sistema_control_inventario_bodega_automotriz.model;
 
+import gt.edu.url.sistema_control_inventario_bodega_automotriz.converter.NullableIntegerStringConverter;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.validation.constraints.Size;
 
 @Entity
 public class Catalogo {
@@ -16,25 +20,32 @@ public class Catalogo {
     private Long id;
 
     @NotBlank(message = "El nombre es obligatorio.")
-    @Column(nullable = false)
+    @Size(max = 100, message = "El nombre no puede exceder 100 caracteres.")
+    @Column(nullable = false, length = 100)
     private String nombre;
 
     @NotBlank(message = "La categoría es obligatoria.")
-    @Column(nullable = false)
+    @Size(max = 80, message = "La categoría no puede exceder 80 caracteres.")
+    @Column(nullable = false, length = 80)
     private String categoria;
 
     @NotBlank(message = "La descripción es obligatoria.")
-    @Column(nullable = false)
+    @Size(max = 500, message = "La descripción no puede exceder 500 caracteres.")
+    @Column(nullable = false, length = 500)
     private String descripcion;
 
     @NotNull(message = "La cantidad es obligatoria.")
+    @PositiveOrZero(message = "La cantidad no puede ser negativa.")
     @Column(nullable = false)
     private Integer cantidad;
 
-    // 💡 Quitamos la validación estricta @NotBlank para que pueda iniciar vacío
-    // y el servicio lo complete automáticamente con el valor de la cantidad.
-    private String disponibilidad;
+    @PositiveOrZero(message = "La disponibilidad no puede ser negativa.")
+    @Convert(converter = NullableIntegerStringConverter.class)
+    @Column(length = 10)
+    private Integer disponibilidad;
 
+    @Size(max = 500, message = "La observación no puede exceder 500 caracteres.")
+    @Column(length = 500)
     private String observacion;
 
     // Constructor vacío
@@ -42,7 +53,7 @@ public class Catalogo {
     }
 
     // Constructor completo
-    public Catalogo(Long id, String nombre, String categoria, String descripcion, Integer cantidad, String disponibilidad, String observacion) {
+    public Catalogo(Long id, String nombre, String categoria, String descripcion, Integer cantidad, Integer disponibilidad, String observacion) {
         this.id = id;
         this.nombre = nombre;
         this.categoria = categoria;
@@ -93,11 +104,11 @@ public class Catalogo {
         this.cantidad = cantidad;
     }
 
-    public String getDisponibilidad() {
+    public Integer getDisponibilidad() {
         return disponibilidad;
     }
 
-    public void setDisponibilidad(String disponibilidad) {
+    public void setDisponibilidad(Integer disponibilidad) {
         this.disponibilidad = disponibilidad;
     }
 
