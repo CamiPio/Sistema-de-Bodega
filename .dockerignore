@@ -1,0 +1,15 @@
+.git
+.gitignore
+.vscode
+.idea
+**/.git
+**/.vscode
+**/.idea
+**/target
+**/build
+**/data
+**/*.log
+.env
+.env.*
+**/.env
+**/.env.*
