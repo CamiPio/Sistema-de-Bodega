@@ -26,6 +26,59 @@ h2 {
     margin-bottom: 15px;
 }
 
+.mostrar-contrasena {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 8px 0;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.password-field {
+    position: relative;
+}
+
+.password-field .regla-contrasena {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    z-index: 5;
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #fecdca;
+    border-radius: 6px;
+    background: #fff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.16);
+    color: #b42318;
+    font-size: 13px;
+    line-height: 1.35;
+    pointer-events: none;
+}
+
+.password-field .regla-contrasena:empty {
+    display: none;
+}
+
+.password-field .regla-contrasena.valida {
+    border-color: #a6f4c5;
+    background: #ecfdf3;
+    color: #067647;
+}
+
+.password-field .regla-contrasena.error {
+    border-color: #fecdca;
+    background: #fef3f2;
+    color: #b42318;
+}
+
+.mostrar-contrasena input[type="checkbox"] {
+    width: auto;
+    margin: 0;
+    accent-color: #0b3c65;
+    cursor: pointer;
+}
+
 label {
     display: block;
     margin-bottom: 5px;

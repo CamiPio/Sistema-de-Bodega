@@ -9,6 +9,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 @Entity
@@ -35,6 +36,10 @@ public class Usuario {
 
     @NotBlank(message = "La contraseña es obligatoria.")
     @Size(min = 6, max = 72, message = "La contraseña debe tener entre 6 y 72 caracteres.")
+    @Pattern(
+        regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^a-zA-Z0-9\\s()\\x2d´”`’])[^()\\x2d´”`’]+$",
+        message = "La contraseña debe incluir minúscula, mayúscula, número y carácter especial; no puede contener (), -, ´, ”, ` ni ’."
+    )
     @Column(nullable = false)
     private String contrasena;
 

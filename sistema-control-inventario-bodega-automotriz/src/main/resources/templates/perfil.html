@@ -34,14 +34,27 @@
 
       <div class="form-group">
         <label for="contrasena">Nueva contraseña (opcional)</label>
-        <input id="contrasena" type="password" th:field="*{contrasena}" minlength="6"
-               maxlength="72" autocomplete="new-password" />
-        <p th:errors="*{contrasena}" role="alert"></p>
+        <div class="password-field">
+          <input id="contrasena" type="password" th:field="*{contrasena}" minlength="6"
+                 maxlength="72"
+                 pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^a-zA-Z0-9\s()\x2d´”`’])[^()\x2d´”`’]{6,72}"
+                 data-password-policy aria-describedby="mensajeReglaContrasenaPerfil"
+                 autocomplete="new-password" />
+          <small id="mensajeReglaContrasenaPerfil" class="regla-contrasena" data-password-feedback aria-live="polite"
+                 th:classappend="${errorContrasena != null} ? ' error' : ''"
+                 th:text="${errorContrasena} ?: ''"></small>
+        </div>
+        <label class="mostrar-contrasena">
+          <input type="checkbox" data-password-toggle="contrasena" />
+          Mostrar contraseña
+        </label>
       </div>
 
       <button type="submit">Guardar cambios</button>
       <p><a th:href="@{/catalogo}">Volver al catálogo</a></p>
     </form>
   </main>
+  <script th:src="@{/password-toggle.js}" defer></script>
+  <script th:src="@{/password-validation.js}" defer></script>
 </body>
 </html>

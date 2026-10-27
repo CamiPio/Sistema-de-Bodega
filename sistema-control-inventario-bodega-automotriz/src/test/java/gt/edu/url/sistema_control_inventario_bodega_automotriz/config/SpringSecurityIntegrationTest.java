@@ -98,6 +98,27 @@ class SpringSecurityIntegrationTest {
     }
 
     @Test
+    void accesoYRegistroConservanSusRutasYPermitenMostrarContrasena() throws Exception {
+        mockMvc.perform(get("/password-toggle.js"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("checkbox.checked ? 'text' : 'password'")));
+
+        mockMvc.perform(get("/password-validation.js"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("faltan ${remaining}")))
+                .andExpect(content().string(containsString("if (forbidden.length > 0)")));
+
+        mockMvc.perform(get("/login"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("action=\"/auth/login\"")))
+                .andExpect(content().string(containsString("action=\"/auth/registrar\"")))
+                .andExpect(content().string(containsString("data-password-toggle=\"contrasenaLogin\"")))
+                .andExpect(content().string(containsString("data-password-toggle=\"contrasenaRegistro\"")))
+                .andExpect(content().string(containsString("data-password-policy")))
+                .andExpect(content().string(containsString("password-validation.js")));
+    }
+
+    @Test
     void regresarDesdeLaListaDeUsuariosUsaElFormularioDeLogout() throws Exception {
         mockMvc.perform(get("/usuarios/lista").with(user("admin@bodega.com").roles("ADMIN")))
                 .andExpect(status().isOk())
@@ -141,6 +162,65 @@ class SpringSecurityIntegrationTest {
                         .param("contrasena", "incorrecta"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/login?error"));
+    }
+
+    @Test
+    void registroRechazaContrasenaSinLosRequisitosYNoCreaLaCuenta() throws Exception {
+        String correo = "contrasena.invalida@bodega.com";
+
+        mockMvc.perform(post("/auth/registrar")
+                        .with(csrf())
+                        .param("nombre", "Usuario")
+                        .param("apellido", "Prueba")
+                        .param("correo", correo)
+                        .param("contrasena", "abc123"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("login"))
+                .andExpect(content().string(containsString("class=\"contenedor active\"")))
+                .andExpect(content().string(containsString("Falta: una mayúscula; un carácter especial.")));
+
+        assertTrue(usuarioRepository.findByCorreoIgnoreCase(correo).isEmpty());
+    }
+
+    @Test
+    void registroRechazaCaracteresProhibidosEnLaContrasena() throws Exception {
+        String correo = "contrasena.prohibida@bodega.com";
+
+        mockMvc.perform(post("/auth/registrar")
+                        .with(csrf())
+                        .param("nombre", "Usuario")
+                        .param("apellido", "Prueba")
+                        .param("correo", correo)
+                        .param("contrasena", "Abc123-!"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("login"))
+                .andExpect(content().string(containsString("class=\"contenedor active\"")))
+                .andExpect(content().string(containsString("quitar el carácter no permitido «-»")));
+
+        assertTrue(usuarioRepository.findByCorreoIgnoreCase(correo).isEmpty());
+    }
+
+    @Test
+    void registroAceptaContrasenaQueCumpleLaPolitica() throws Exception {
+        String correo = "contrasena.valida@bodega.com";
+        String contrasena = "Abc123!";
+
+        mockMvc.perform(post("/auth/registrar")
+                        .with(csrf())
+                        .param("nombre", "Usuario")
+                        .param("apellido", "Prueba")
+                        .param("correo", correo)
+                        .param("contrasena", contrasena))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/login"));
+
+        Usuario creado = usuarioRepository.findByCorreoIgnoreCase(correo).orElseThrow();
+        try {
+            assertEquals(RolUsuario.USUARIO, creado.getRol());
+            assertTrue(passwordEncoder.matches(contrasena, creado.getContrasena()));
+        } finally {
+            usuarioRepository.delete(creado);
+        }
     }
 
     @Test
@@ -237,13 +317,13 @@ class SpringSecurityIntegrationTest {
                             .param("nombre", admin.getNombre())
                             .param("apellido", admin.getApellido())
                             .param("correo", correoNuevo)
-                            .param("contrasena", "nueva-clave-segura"))
+                            .param("contrasena", "NuevaClave9!"))
                     .andExpect(redirectedUrl("/perfil"))
                     .andReturn();
 
             Usuario actualizado = usuarioRepository.findByCorreoIgnoreCase(correoNuevo).orElseThrow();
             assertEquals(RolUsuario.ADMIN, actualizado.getRol());
-            assertTrue(passwordEncoder.matches("nueva-clave-segura", actualizado.getContrasena()));
+            assertTrue(passwordEncoder.matches("NuevaClave9!", actualizado.getContrasena()));
             mockMvc.perform(get("/perfil").session(
                             (MockHttpSession) resultado.getRequest().getSession(false)))
                     .andExpect(status().isOk());
