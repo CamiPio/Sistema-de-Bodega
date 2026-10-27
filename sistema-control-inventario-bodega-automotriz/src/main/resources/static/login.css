@@ -101,7 +101,6 @@ form{
     cursor: pointer; 
 }
 
-
 select {
     appearance: none; /* Permite eliminar y modifiar la flecha del select*/
   }
@@ -129,6 +128,71 @@ input:hover{
     box-shadow: 0 0 5px black;
     cursor: pointer;
     font-size: 16px;
+}
+
+.mostrar-contrasena{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: -20px 0 16px;
+    color: var(--color-principal);
+    font-size: 13px;
+    text-align: left;
+    cursor: pointer;
+}
+
+.ingreso-datos .regla-contrasena,
+.password-field .regla-contrasena{
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    z-index: 5;
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #fecdca;
+    border-radius: 6px;
+    background: #fff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, .16);
+    color: #b42318;
+    font-size: 11px;
+    line-height: 1.35;
+    text-align: left;
+    pointer-events: none;
+}
+
+.ingreso-datos .regla-contrasena:empty,
+.password-field .regla-contrasena:empty{
+    display: none;
+}
+
+.ingreso-datos .regla-contrasena.valida,
+.password-field .regla-contrasena.valida{
+    border-color: #a6f4c5;
+    background: #ecfdf3;
+    color: #067647;
+}
+
+.ingreso-datos .regla-contrasena.error,
+.password-field .regla-contrasena.error{
+    border-color: #fecdca;
+    background: #fef3f2;
+    color: #b42318;
+}
+
+.mostrar-contrasena input[type="checkbox"]{
+    width: auto;
+    margin: 0;
+    padding: 0;
+    accent-color: var(--color-principal);
+    cursor: pointer;
+}
+
+.mensaje-error-login{
+    margin-top: 14px;
+    padding: 10px 12px;
+    color: #b42318;
+    font-size: 14px;
+    line-height: 1.4;
 }
 
 .caja-panel{

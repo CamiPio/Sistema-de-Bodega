@@ -2,12 +2,10 @@ package gt.edu.url.sistema_control_inventario_bodega_automotriz.controller;
 
 import java.util.List;
 
-import gt.edu.url.sistema_control_inventario_bodega_automotriz.dto.UsuarioEdicionForm;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.context.SecurityContextRepository;
@@ -21,9 +19,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import gt.edu.url.sistema_control_inventario_bodega_automotriz.dto.UsuarioEdicionForm;
 import gt.edu.url.sistema_control_inventario_bodega_automotriz.model.RolUsuario;
 import gt.edu.url.sistema_control_inventario_bodega_automotriz.model.Usuario;
 import gt.edu.url.sistema_control_inventario_bodega_automotriz.service.UsuarioService;
+import gt.edu.url.sistema_control_inventario_bodega_automotriz.validation.PasswordPolicyFeedback;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -46,6 +46,7 @@ public class UsuarioController {
     public String mostrarLogin(Model model) {
         model.addAttribute("usuarioLogin", new Usuario());
         model.addAttribute("usuarioRegistro", new Usuario());
+        model.addAttribute("mostrarRegistro", model.containsAttribute("mensajeRegistro"));
         return "login"; // Carga tu archivo login.html
     }
 
@@ -69,6 +70,7 @@ public class UsuarioController {
                                    RedirectAttributes redirectAttributes) {
         Usuario actual = usuarioActual(authentication);
         if (bindingResult.hasErrors()) {
+            agregarAvisoContrasena(bindingResult, formulario.getContrasena(), model);
             return "perfil";
         }
 
@@ -122,6 +124,8 @@ public class UsuarioController {
         // Si hay errores en las validaciones (campos vacíos, contraseña corta, etc.)
         if (bindingResult.hasErrors()) {
             model.addAttribute("usuarioLogin", new Usuario()); // Mantiene el objeto login vivo
+            model.addAttribute("mostrarRegistro", true);
+            agregarAvisoContrasena(bindingResult, usuarioRegistro.getContrasena(), model);
             return "login"; // Recarga la vista de login/registro mostrando los errores
         }
 
@@ -133,6 +137,7 @@ public class UsuarioController {
             model.addAttribute("errorRegistro", e.getMessage()); // Mensaje específico para el formulario de registro
             model.addAttribute("usuarioLogin", new Usuario());   // Mantiene vivo el objeto de login
             model.addAttribute("usuarioRegistro", usuarioRegistro); // Mantiene los datos que ingresó el usuario
+            model.addAttribute("mostrarRegistro", true);
             return "login"; // Recarga la misma vista mostrando el error
         }
         
@@ -182,6 +187,7 @@ public class UsuarioController {
                                     RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
             model.addAttribute("usuarioId", id);
+            agregarAvisoContrasena(bindingResult, formulario.getContrasena(), model);
             return "editarUsuario";
         }
         try {
@@ -222,6 +228,12 @@ public class UsuarioController {
             redirectAttributes.addFlashAttribute("errorRol", e.getMessage());
         }
         return "redirect:/usuarios/lista";
+    }
+
+    private void agregarAvisoContrasena(BindingResult bindingResult, String contrasena, Model model) {
+        if (bindingResult.hasFieldErrors("contrasena")) {
+            model.addAttribute("errorContrasena", PasswordPolicyFeedback.describe(contrasena));
+        }
     }
 
 }

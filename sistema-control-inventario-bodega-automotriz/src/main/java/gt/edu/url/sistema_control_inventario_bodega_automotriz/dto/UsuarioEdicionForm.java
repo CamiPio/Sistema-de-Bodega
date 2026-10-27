@@ -20,7 +20,10 @@ public class UsuarioEdicionForm {
     @Size(max = 254, message = "El correo no puede exceder 254 caracteres.")
     private String correo;
 
-    @Pattern(regexp = "^$|.{6,72}", message = "La contraseña debe tener entre 6 y 72 caracteres.")
+    @Pattern(
+        regexp = "^$|(?=.{6,72}$)(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^a-zA-Z0-9\\s()\\x2d´”`’])[^()\\x2d´”`’]+$",
+        message = "La contraseña debe tener entre 6 y 72 caracteres, incluir minúscula, mayúscula, número y carácter especial; no puede contener (), -, ´, ”, ` ni ’."
+    )
     private String contrasena;
 
     public String getNombre() {
