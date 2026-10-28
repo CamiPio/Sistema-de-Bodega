@@ -35,6 +35,9 @@ public class Prestamo {
     @Column(nullable = false)
     private Long idProducto;
 
+    @Column(name = "usuario_id")
+    private Long idUsuario;
+
     @NotBlank(message = "El nombre del solicitante es obligatorio.")
     @Size(max = 120, message = "El nombre del solicitante no puede exceder 120 caracteres.")
     @Column(nullable = false, length = 120)
@@ -43,9 +46,17 @@ public class Prestamo {
     @Column(nullable = false)
     private boolean estadoActivo;
 
+    private Boolean estadoPendiente;
+
+    private Boolean estadoRechazado;
+
     @Size(max = 500, message = "La observación no puede exceder 500 caracteres.")
     @Column(length = 500)
     private String observacionEntrega;
+
+    @Size(max = 500, message = "La observación de devolución no puede exceder 500 caracteres.")
+    @Column(length = 500)
+    private String observacionDevolucion;
 
     // Constructor vacío
     public Prestamo() {
@@ -86,6 +97,14 @@ public class Prestamo {
         this.idProducto = idProducto;
     }
 
+    public Long getIdUsuario() {
+        return idUsuario;
+    }
+
+    public void setIdUsuario(Long idUsuario) {
+        this.idUsuario = idUsuario;
+    }
+
     public String getNombreSolicitante() {
         return nombreSolicitante;
     }
@@ -102,11 +121,35 @@ public class Prestamo {
         this.estadoActivo = estadoActivo;
     }
 
+    public boolean isEstadoPendiente() {
+        return Boolean.TRUE.equals(estadoPendiente);
+    }
+
+    public void setEstadoPendiente(boolean estadoPendiente) {
+        this.estadoPendiente = estadoPendiente;
+    }
+
+    public boolean isEstadoRechazado() {
+        return Boolean.TRUE.equals(estadoRechazado);
+    }
+
+    public void setEstadoRechazado(boolean estadoRechazado) {
+        this.estadoRechazado = estadoRechazado;
+    }
+
     public String getObservacionEntrega() {
         return observacionEntrega;
     }
 
     public void setObservacionEntrega(String observacionEntrega) {
         this.observacionEntrega = observacionEntrega;
+    }
+
+    public String getObservacionDevolucion() {
+        return observacionDevolucion;
+    }
+
+    public void setObservacionDevolucion(String observacionDevolucion) {
+        this.observacionDevolucion = observacionDevolucion;
     }
 }

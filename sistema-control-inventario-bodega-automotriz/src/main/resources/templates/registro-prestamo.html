@@ -2,6 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registro de Préstamo</title>
     
     <!-- ENLACE AL CSS DE LA BARRA DE MENÚ -->
@@ -32,56 +33,88 @@
         .form-group { margin-bottom: 15px; }
         label { display: block; font-weight: bold; margin-bottom: 5px; }
         input, select, textarea { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+        .busqueda-producto { margin-bottom: 8px; }
+        .resultado-busqueda-producto { margin: 0 0 8px; color: #526174; font-size: 0.9rem; }
         button { background-color: #0056b3; color: white; border: none; padding: 10px 20px; font-weight: bold; border-radius: 4px; cursor: pointer; width: 100%; }
         button:hover { background-color: #004085; }
         .error { color: #b02a37; }
     </style>
+    <link rel="stylesheet" th:href="@{/app.css}" />
 </head>
-<body>
+<body class="app-page">
 
     <!-- INSERCIÓN DE LA BARRA DE MENÚ PROFESIONAL -->
     <div th:replace="barraMenu :: menu"></div>
 
     <div class="card">
-        <h2>Registrar Préstamo</h2>
+        <h2 th:text="${esAdministrador} ? 'Registrar préstamo' : 'Solicitar préstamo'">Solicitar préstamo</h2>
 
-        <form th:action="@{/prestamos/guardar}" th:object="${prestamo}" method="post">
+        <form th:action="${esAdministrador} ? @{/prestamos/guardar} : @{/prestamos/solicitar}"
+              th:object="${prestamo}" method="post">
             <p class="error" th:each="error : ${#fields.globalErrors()}" th:text="${error}" role="alert"></p>
+            <p class="error" th:if="${errorPrestamo}" th:text="${errorPrestamo}" role="alert"></p>
             
-            <div class="form-group">
-                <label>Herramienta / Producto:</label>
-                <select th:field="*{idProducto}" required>
+            <div class="form-group" th:if="${esAdministrador}">
+                <label for="buscarProductoPrestamo">Herramienta / Producto:</label>
+                <input id="buscarProductoPrestamo" class="busqueda-producto" type="search"
+                       placeholder="Escribe el nombre para filtrar..."
+                       aria-controls="productoPrestamo" autocomplete="off">
+                <p id="resultadoBusquedaProducto" class="resultado-busqueda-producto"
+                   aria-live="polite">Escribe para filtrar la lista de herramientas.</p>
+                <select id="productoPrestamo" th:field="*{idProducto}" required>
                     <option value="">-- Seleccione un producto --</option>
-                    <option th:each="prod : ${productos}" 
+                    <option th:each="prod : ${productos}"
+                            th:with="disponibles=${prod.disponibilidad == null ? prod.cantidad : prod.disponibilidad}"
                             th:value="${prod.id}" 
-                            th:text="${prod.nombre + ' (' + prod.disponibilidad + ' disponibles)'}"
-                            th:disabled="${prod.disponibilidad == null or prod.disponibilidad == 0}">
+                            th:text="${prod.nombre + ' (' + disponibles + ' disponibles)'}"
+                            th:disabled="${disponibles == null or disponibles <= 0}">
                     </option>
                 </select>
                 <span class="error" th:errors="*{idProducto}"></span>
             </div>
+            <div class="form-group" th:unless="${esAdministrador}">
+                <input type="hidden" th:field="*{idProducto}">
+                <div th:if="${herramientaSeleccionada != null}">
+                    <strong>Herramienta seleccionada:</strong>
+                    <span th:text="${herramientaSeleccionada.nombre}">Herramienta</span>
+                    <span th:text="${' (' + (herramientaSeleccionada.disponibilidad == null ? herramientaSeleccionada.cantidad : herramientaSeleccionada.disponibilidad) + ' disponibles)'}">
+                        (0 disponibles)
+                    </span>
+                </div>
+                <div th:unless="${herramientaSeleccionada != null}" class="error" role="alert">
+                    Selecciona la herramienta directamente desde el catálogo para enviar la solicitud.
+                    <a th:href="@{/catalogo#herramientas}">Volver al catálogo</a>
+                </div>
+                <span class="error" th:errors="*{idProducto}"></span>
+            </div>
 
-            <div class="form-group">
-                <label>Nombre del Solicitante:</label>
-                <input type="text" th:field="*{nombreSolicitante}" maxlength="120" placeholder="Ej. Juan Pérez - 4to B" required />
+            <div class="form-group" th:if="${esAdministrador}">
+                <label>Nombre de la persona que recibe:</label>
+                <input type="text" th:field="*{nombreSolicitante}" maxlength="120"
+                       placeholder="Nombre y apellido" required />
                 <span class="error" th:errors="*{nombreSolicitante}"></span>
             </div>
 
-            <div class="form-group">
+            <div class="form-group" th:if="${esAdministrador}">
                 <label>Fecha:</label>
                 <input type="date" th:field="*{fecha}" th:attr="max=${fechaMaxima}" required />
                 <span class="error" th:errors="*{fecha}"></span>
             </div>
 
-            <div class="form-group">
+            <div class="form-group" th:if="${esAdministrador}">
                 <label>Observación de Salida:</label>
                 <textarea th:field="*{observacionEntrega}" maxlength="500" rows="3" placeholder="Estado en que se entrega..."></textarea>
                 <span class="error" th:errors="*{observacionEntrega}"></span>
             </div>
 
-            <button type="submit">Guardar Préstamo</button>
+            <button type="submit"
+                    th:if="${esAdministrador or herramientaSeleccionada != null}"
+                    th:text="${esAdministrador} ? 'Registrar y entregar préstamo' : 'Enviar solicitud de esta herramienta'">
+                Enviar solicitud
+            </button>
         </form>
     </div>
-
+    </div>
+    <script th:src="@{/prestamos.js}" defer></script>
 </body>
 </html>

@@ -4,9 +4,12 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Acceso Denegado</title>
+  <link rel="stylesheet" th:href="@{/barraMenu.css}">
   <link rel="stylesheet" th:href="@{/styles.css}">
+  <link rel="stylesheet" th:href="@{/app.css}">
 </head>
-<body>
+<body class="app-page">
+<div th:replace="barraMenu :: menu"></div>
 <main>
   <h1>Instituto Técnico Industrial</h1>
   <div class="aviso error" role="alert">

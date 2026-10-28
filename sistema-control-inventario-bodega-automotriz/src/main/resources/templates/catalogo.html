@@ -3,282 +3,137 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Catálogo - Sistema de Bodega</title>
-    
-    <!-- ENLACE AL CSS DE LA BARRA DE MENÚ (Solución para que cargue los estilos correctamente) -->
-    <link rel="stylesheet" th:href="@{/barraMenu.css}" />
-
-    <style>
-        body { 
-            font-family: Arial, sans-serif; 
-            margin: 0; /* Ajustado a 0 para que la barra de menú ocupe bien el borde superior */
-            padding: 20px;
-            background-color: #f4f6f9; 
-        }
-
-        /* Título principal centrado con fondo azul */
-        h1 { 
-            text-align: center; 
-            background-color: #007bff; 
-            color: white; 
-            padding: 15px; 
-            border-radius: 6px;
-            margin-bottom: 10px;
-        }
-
-        /* Texto de bienvenida centrado, mediano, azul oscuro, negrita y cursiva */
-        .bienvenida { 
-            text-align: center; 
-            font-size: 1.1em; 
-            color: #003366; 
-            font-weight: bold; 
-            font-style: italic; 
-            margin-bottom: 25px;
-        }
-
-        /* Contenedor flexible para alinear el título de sección y el botón a la par */
-        .seccion-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 25px;
-            margin-bottom: 10px;
-        }
-
-        /* Título de sección "Productos Registrados en el Sistema" en azul oscuro y negrita */
-        .titulo-seccion {
-            color: #003366;
-            font-weight: bold;
-            margin: 0;
-        }
-
-        /* Botón de Préstamos Activos a la par de la sección con color #004085 */
-        .btn-prestamos-header {
-            background-color: #004085; 
-            color: white; 
-            padding: 8px 15px; 
-            text-decoration: none;
-            border-radius: 5px; 
-            font-weight: bold;
-            font-size: 13px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-
-        .btn-prestamos-header:hover {
-            background-color: #002752;
-        }
-
-        /* Formulario (Primera tabla/contenedor) redondeado y con sombra sobresaliente */
-        form { 
-            background: white; 
-            padding: 25px; 
-            border-radius: 12px; 
-            max-width: 500px; 
-            margin: 0 auto 30px auto; 
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15); 
-        }
-
-        /* Título de Gestión de Productos diferenciado con el color azul */
-        .titulo-form {
-            text-align: center;
-            background-color: #007bff;
-            color: white;
-            padding: 10px;
-            border-radius: 6px;
-            margin-top: 0;
-            margin-bottom: 15px;
-            font-size: 1.2em;
-        }
-
-        label { 
-            display: block; 
-            margin-top: 10px; 
-            font-weight: bold; 
-            color: #333;
-        }
-
-        input { 
-            width: 100%; 
-            padding: 8px; 
-            margin-top: 5px; 
-            box-sizing: border-box; 
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-
-        /* Botón centrado, pequeño, con color #0056b3 y hover más oscuro */
-        .btn-contenedor {
-            text-align: center;
-            margin-top: 20px;
-        }
-
-        button { 
-            background-color: #0056b3; 
-            color: white; 
-            padding: 8px 18px; 
-            border: none; 
-            border-radius: 5px; 
-            cursor: pointer; 
-            font-weight: bold;
-            display: inline-block;
-        }
-
-        button:hover { 
-            background-color: #0056b3; 
-        }
-
-        /* Tabla de productos */
-        table { 
-            width: 100%; 
-            border-collapse: collapse; 
-            margin-top: 10px; 
-            background: white; 
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        }
-
-        th, td { 
-            border: 1px solid #ddd; 
-            padding: 12px; 
-            text-align: left; 
-        }
-
-        th { 
-            background-color: #007bff; 
-            color: white; 
-        }
-
-        /* Efecto hover cuando el cursor se posiciona sobre las filas */
-        tbody tr:hover {
-            background-color: #e9ecef;
-            cursor: pointer;
-        }
-
-        /* Enlaces de acciones */
-        .btn-editar { 
-            color: #007bff; 
-            text-decoration: none; 
-            margin-right: 10px; 
-            font-weight: bold;
-        }
-
-        .btn-eliminar { 
-            color: #dc3545; 
-            text-decoration: none; 
-            font-weight: bold;
-        }
-
-        .btn-editar:hover, .btn-eliminar:hover {
-            text-decoration: underline;
-        }
-
-        .mensaje {
-            max-width: 700px;
-            margin: 12px auto;
-            padding: 10px;
-            border-radius: 5px;
-            background: #e7f5ea;
-            color: #155724;
-        }
-
-        .error-campo {
-            color: #b02a37;
-            display: block;
-            font-size: 0.9em;
-        }
-    </style>
+    <title>Panel de inventario - Sistema de Bodega</title>
+    <link rel="stylesheet" th:href="@{/barraMenu.css}">
+    <link rel="stylesheet" th:href="@{/app.css}">
+    <link rel="stylesheet" th:href="@{/catalogo.css}">
 </head>
-<body>
-
-    <!-- INSERCIÓN DE LA BARRA DE MENÚ -->
+<body class="app-page">
     <div th:replace="barraMenu :: menu"></div>
 
-    <h1>Inventario de Bodega Mecánica Automotriz</h1>
-    <p class="bienvenida">Bienvenido al sistema de gestión y control de herramientas y equipo</p>
-    <p th:if="${param.accesoDenegado}" role="alert">No tienes permisos para realizar esa acción.</p>
-    <p class="mensaje" th:if="${mensajeCatalogo}" th:text="${mensajeCatalogo}" role="status"></p>
-    <p th:if="${errorCatalogo}" th:text="${errorCatalogo}" role="alert"></p>
-    <p th:if="${busqueda != null and !busqueda.isBlank() and #lists.isEmpty(listaCatalogo)}" role="status">
-        No se encontraron herramientas para "<span th:text="${busqueda}"></span>".
-    </p>
+    <main class="panel-inventario">
+        <section class="encabezado-dashboard">
+            <div>
+                <span class="etiqueta-panel">PANEL DE CONTROL</span>
+                <h1>Inventario de bodega</h1>
+                <p>Consulta las existencias y administra las herramientas del taller.</p>
+            </div>
+            <div class="acciones-dashboard">
+                <a class="boton-dashboard boton-principal"
+                   th:if="${session.usuarioRol == 'ADMIN'}" th:href="@{/catalogo/nuevo}">
+                    <span aria-hidden="true">+</span> Agregar herramienta
+                </a>
+            </div>
+        </section>
 
-    <!-- Formulario / Contenedor principal de captura -->
-    <form th:if="${session.usuarioRol == 'ADMIN'}" th:action="@{/catalogo/guardar}" th:object="${catalogoNuevo}" method="post">
-        <h3 class="titulo-form" th:text="*{id} == null ? 'Registrar herramienta' : 'Editar herramienta'">Gestión de Herramientas</h3>
-        <p class="error-campo" th:each="error : ${#fields.globalErrors()}" th:text="${error}"></p>
-        
-        <input type="hidden" th:field="*{id}" />
-        <span class="error-campo" th:errors="*{id}"></span>
+        <p class="mensaje-dashboard" th:if="${mensajeCatalogo}" th:text="${mensajeCatalogo}" role="status"></p>
+        <p class="mensaje-dashboard mensaje-error-dashboard" th:if="${errorCatalogo}" th:text="${errorCatalogo}" role="alert"></p>
+        <p class="mensaje-dashboard mensaje-error-dashboard" th:if="${param.accesoDenegado}" role="alert">
+            No tienes permisos para realizar esa acción.
+        </p>
 
-        <label>Nombre:</label>
-        <input type="text" th:field="*{nombre}" maxlength="100" required />
-        <span class="error-campo" th:errors="*{nombre}"></span>
+        <section class="resumen-inventario"
+                 th:classappend="${session.usuarioRol != 'ADMIN'} ? 'resumen-usuario' : ''"
+                 aria-label="Resumen del inventario">
+            <article class="tarjeta-resumen tarjeta-azul">
+                <span class="icono-resumen" aria-hidden="true">▦</span>
+                <div>
+                    <p>Herramientas registradas</p>
+                    <strong th:text="${totalHerramientas}">0</strong>
+                </div>
+            </article>
+            <article class="tarjeta-resumen tarjeta-verde" th:if="${session.usuarioRol == 'ADMIN'}">
+                <span class="icono-resumen" aria-hidden="true">✓</span>
+                <div>
+                    <p>Unidades disponibles</p>
+                    <strong th:text="${unidadesDisponibles}">0</strong>
+                </div>
+            </article>
+            <article class="tarjeta-resumen tarjeta-ambar" th:if="${session.usuarioRol == 'ADMIN'}">
+                <span class="icono-resumen" aria-hidden="true">↗</span>
+                <div>
+                    <p>Préstamos activos</p>
+                    <strong th:text="${prestamosActivos}">0</strong>
+                </div>
+            </article>
+            <article class="tarjeta-resumen tarjeta-violeta" th:if="${session.usuarioRol == 'ADMIN'}">
+                <span class="icono-resumen" aria-hidden="true">▤</span>
+                <div>
+                    <p>Unidades en inventario</p>
+                    <strong th:text="${totalUnidades}">0</strong>
+                </div>
+            </article>
+        </section>
 
-        <label>Categoría:</label>
-        <input type="text" th:field="*{categoria}" maxlength="80" required />
-        <span class="error-campo" th:errors="*{categoria}"></span>
+        <section id="herramientas" class="seccion-inventario">
+            <div class="encabezado-seccion">
+                <div>
+                    <h2>Herramientas</h2>
+                    <p th:text="${#lists.size(listaCatalogo) + ' resultados'}">0 resultados</p>
+                </div>
+                <a class="enlace-prestamos-movil" th:href="@{/prestamos}"
+                   th:text="${session.usuarioRol == 'ADMIN' ? 'Control de préstamos' : 'Mis préstamos'}">
+                    Mis préstamos
+                </a>
+            </div>
 
-        <label>Descripción:</label>
-        <input type="text" th:field="*{descripcion}" maxlength="500" required />
-        <span class="error-campo" th:errors="*{descripcion}"></span>
+            <p class="sin-resultados" th:if="${busqueda != null and !busqueda.isBlank() and #lists.isEmpty(listaCatalogo)}" role="status">
+                No se encontraron herramientas para "<span th:text="${busqueda}"></span>".
+            </p>
+            <p class="sin-resultados" th:if="${#lists.isEmpty(listaCatalogo) and (busqueda == null or busqueda.isBlank())}">
+                Aún no hay herramientas en el inventario.
+                <a th:if="${session.usuarioRol == 'ADMIN'}" th:href="@{/catalogo/nuevo}">Registra la primera.</a>
+            </p>
 
-        <label>Cantidad:</label>
-        <input type="number" th:field="*{cantidad}" min="0" max="2147483647" required />
-        <span class="error-campo" th:errors="*{cantidad}"></span>
-
-        <label>Disponibilidad:</label>
-        <input type="number" th:value="*{disponibilidad}" min="0" th:attr="max=*{cantidad}" disabled />
-        <small>La disponibilidad se actualiza automáticamente al registrar préstamos y devoluciones.</small>
-
-        <label>Observación:</label>
-        <input type="text" th:field="*{observacion}" maxlength="500" />
-
-        <div class="btn-contenedor">
-            <button type="submit" th:text="*{id} == null ? 'Registrar herramienta' : 'Guardar cambios'">Guardar herramienta</button>
-            <a th:if="*{id} != null" th:href="@{/catalogo}">Cancelar</a>
-        </div>
-    </form>
-
-    <hr>
-
-    <!-- Encabezado de sección que alinea el título y el botón de préstamos a la par -->
-    <div class="seccion-header">
-        <h3 class="titulo-seccion">Productos Registrados en el Sistema</h3>
-        <a class="btn-prestamos-header" th:href="@{/prestamos}">Ver Préstamos Activos</a>
-    </div>
-
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Nombre</th>
-                <th>Categoría</th>
-                <th>Descripción</th>
-                <th>Cantidad</th>
-                <th>Disponibilidad</th>
-                <th>Observación</th>
-                <th th:if="${session.usuarioRol == 'ADMIN'}">Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr th:each="c : ${listaCatalogo}">
-                <td th:text="${c.id}">1</td>
-                <td th:text="${c.nombre}">Nombre</td>
-                <td th:text="${c.categoria}">Categoría</td>
-                <td th:text="${c.descripcion}">Descripción</td>
-                <td th:text="${c.cantidad}">0</td>
-                <td th:text="${c.disponibilidad}">Disponible</td>
-                <td th:text="${c.observacion}">Ninguna</td>
-                <td th:if="${session.usuarioRol == 'ADMIN'}">
-                    <a class="btn-editar" th:href="@{/catalogo/editar/{id}(id=${c.id})}">Editar</a>
-                    <form th:action="@{/catalogo/eliminar/{id}(id=${c.id})}" method="post" style="display:inline; padding:0; margin:0; box-shadow:none" onsubmit="return confirm('¿Estás seguro de eliminar esta herramienta?');">
-                        <button type="submit" class="btn-eliminar" style="background:none; border:0; padding:0">Eliminar</button>
-                    </form>
-                </td>
-            </tr>
-        </tbody>
-    </table>
-
+            <div class="tabla-scroll" th:if="${!#lists.isEmpty(listaCatalogo)}">
+                <table class="tabla-inventario">
+                    <thead>
+                        <tr>
+                            <th>Herramienta</th>
+                            <th>Categoría</th>
+                            <th>Descripción</th>
+                            <th>Existencia</th>
+                            <th>Disponibilidad</th>
+                            <th th:if="${session.usuarioRol != 'ADMIN'}">Préstamo</th>
+                            <th th:if="${session.usuarioRol == 'ADMIN'}">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="c : ${listaCatalogo}"
+                            th:with="disponibles=${c.disponibilidad == null ? c.cantidad : c.disponibilidad}">
+                            <td>
+                                <span class="nombre-herramienta" th:text="${c.nombre}">Nombre</span>
+                                <small th:text="'ID ' + ${c.id}">ID 1</small>
+                            </td>
+                            <td><span class="etiqueta-categoria" th:text="${c.categoria}">Categoría</span></td>
+                            <td class="descripcion-herramienta" th:text="${c.descripcion}">Descripción</td>
+                            <td th:text="${c.cantidad}">0</td>
+                            <td>
+                                <span class="estado-stock"
+                                      th:classappend="${disponibles == 0 ? ' estado-agotado' : (disponibles * 4 <= c.cantidad ? ' estado-bajo' : ' estado-disponible')}"
+                                      th:text="${disponibles + ' disponibles'}">
+                                    0 disponibles
+                                </span>
+                            </td>
+                            <td th:if="${session.usuarioRol != 'ADMIN'}">
+                                <a class="boton-dashboard boton-principal boton-prestamo-herramienta"
+                                   th:if="${disponibles != null and disponibles > 0}"
+                                   th:href="@{/prestamos/nuevo(idProducto=${c.id})}">
+                                    Solicitar préstamo
+                                </a>
+                            </td>
+                            <td class="acciones-tabla" th:if="${session.usuarioRol == 'ADMIN'}">
+                                <a class="accion-editar" th:href="@{/catalogo/editar/{id}(id=${c.id})}">Editar</a>
+                                <form th:action="@{/catalogo/eliminar/{id}(id=${c.id})}" method="post"
+                                      onsubmit="return confirm('¿Estás seguro de eliminar esta herramienta?');">
+                                    <button type="submit" class="accion-eliminar">Eliminar</button>
+                                </form>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
 </body>
 </html>

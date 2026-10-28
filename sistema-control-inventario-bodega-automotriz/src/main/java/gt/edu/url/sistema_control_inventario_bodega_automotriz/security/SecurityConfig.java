@@ -37,8 +37,12 @@ public class SecurityConfig {
                 .requestMatchers("/", "/login", "/login.css", "/styles.css", "/barraMenu.css",
                         "/**/*.css", "/**/*.js", "/auth/login", "/auth/registrar",
                         "/error", "/acceso-denegado", "/h2-console/**").permitAll()
-                .requestMatchers("/usuarios/**", "/catalogo/guardar",
-                        "/catalogo/editar/**", "/catalogo/eliminar/**", "/formulario").hasRole("ADMIN")
+                .requestMatchers("/usuarios/**", "/catalogo/nuevo", "/catalogo/guardar",
+                        "/catalogo/editar/**", "/catalogo/eliminar/**", "/formulario",
+                        "/prestamos/guardar").hasRole("ADMIN")
+                .requestMatchers("/prestamos/solicitar").hasRole("USUARIO")
+                .requestMatchers("/prestamos/aprobar/**", "/prestamos/rechazar/**",
+                        "/prestamos/devolver/**").hasRole("ADMIN")
                 .requestMatchers("/catalogo/**", "/prestamos/**", "/perfil/**").authenticated()
                 .anyRequest().authenticated())
             .formLogin(login -> login

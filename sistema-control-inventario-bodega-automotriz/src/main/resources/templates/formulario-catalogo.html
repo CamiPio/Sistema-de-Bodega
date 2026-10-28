@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${modoEdicion} ? 'Editar herramienta' : 'Agregar herramienta'">Herramienta</title>
+    <link rel="stylesheet" th:href="@{/barraMenu.css}">
+    <link rel="stylesheet" th:href="@{/app.css}">
+    <link rel="stylesheet" th:href="@{/catalogo.css}">
+</head>
+<body class="app-page">
+    <div th:replace="barraMenu :: menu"></div>
+
+    <main class="formulario-herramienta">
+        <a class="volver-catalogo" th:href="@{/catalogo}">← Volver al inventario</a>
+        <header class="encabezado-formulario">
+            <span class="etiqueta-panel" th:text="${modoEdicion} ? 'EDICIÓN DE INVENTARIO' : 'NUEVO REGISTRO'">NUEVO REGISTRO</span>
+            <h1 th:text="${modoEdicion} ? 'Editar herramienta' : 'Agregar herramienta'">Agregar herramienta</h1>
+            <p>Completa la información para mantener actualizado el inventario.</p>
+        </header>
+
+        <form class="formulario-catalogo" th:action="@{/catalogo/guardar}" th:object="${catalogoNuevo}" method="post">
+            <p class="error-formulario" th:each="error : ${#fields.globalErrors()}" th:text="${error}" role="alert"></p>
+            <input type="hidden" th:field="*{id}">
+            <span class="error-formulario" th:errors="*{id}"></span>
+
+            <div class="campos-formulario">
+                <div class="campo-formulario">
+                    <label for="nombre">Nombre de la herramienta</label>
+                    <input id="nombre" type="text" th:field="*{nombre}" maxlength="100" placeholder="Ej. Llave de torsión" required>
+                    <span class="error-formulario" th:errors="*{nombre}"></span>
+                </div>
+                <div class="campo-formulario">
+                    <label for="categoria">Categoría</label>
+                    <input id="categoria" type="text" th:field="*{categoria}" maxlength="80" placeholder="Ej. Herramienta manual" required>
+                    <span class="error-formulario" th:errors="*{categoria}"></span>
+                </div>
+                <div class="campo-formulario campo-completo">
+                    <label for="descripcion">Descripción</label>
+                    <textarea id="descripcion" th:field="*{descripcion}" maxlength="500" rows="3" placeholder="Describe brevemente la herramienta" required></textarea>
+                    <span class="error-formulario" th:errors="*{descripcion}"></span>
+                </div>
+                <div class="campo-formulario">
+                    <label for="cantidad">Cantidad total</label>
+                    <input id="cantidad" type="number" th:field="*{cantidad}" min="0" max="2147483647" required>
+                    <span class="error-formulario" th:errors="*{cantidad}"></span>
+                </div>
+                <div class="campo-formulario">
+                    <label for="disponibilidad">Disponibilidad actual</label>
+                    <input id="disponibilidad" type="number" th:value="*{disponibilidad}" min="0"
+                           th:attr="max=*{cantidad}" disabled>
+                    <small>Se actualiza automáticamente con los préstamos y devoluciones.</small>
+                </div>
+                <div class="campo-formulario campo-completo">
+                    <label for="observacion">Observaciones <span>(opcional)</span></label>
+                    <textarea id="observacion" th:field="*{observacion}" maxlength="500" rows="2" placeholder="Estado, ubicación u otra nota"></textarea>
+                    <span class="error-formulario" th:errors="*{observacion}"></span>
+                </div>
+            </div>
+
+            <div class="botones-formulario">
+                <a class="boton-dashboard boton-secundario" th:href="@{/catalogo}">Cancelar</a>
+                <button class="boton-dashboard boton-principal" type="submit"
+                        th:text="${modoEdicion} ? 'Guardar cambios' : 'Registrar herramienta'">Registrar herramienta</button>
+            </div>
+        </form>
+    </main>
+</body>
+</html>

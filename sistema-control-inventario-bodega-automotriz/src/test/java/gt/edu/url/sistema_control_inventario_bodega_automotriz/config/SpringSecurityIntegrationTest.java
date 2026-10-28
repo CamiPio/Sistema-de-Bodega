@@ -24,8 +24,10 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import gt.edu.url.sistema_control_inventario_bodega_automotriz.model.RolUsuario;
 import gt.edu.url.sistema_control_inventario_bodega_automotriz.model.Catalogo;
+import gt.edu.url.sistema_control_inventario_bodega_automotriz.model.Prestamo;
 import gt.edu.url.sistema_control_inventario_bodega_automotriz.model.Usuario;
 import gt.edu.url.sistema_control_inventario_bodega_automotriz.repository.CatalogoRepository;
+import gt.edu.url.sistema_control_inventario_bodega_automotriz.repository.PrestamoRepository;
 import gt.edu.url.sistema_control_inventario_bodega_automotriz.repository.UsuarioRepository;
 
 @SpringBootTest(properties = "spring.datasource.url=jdbc:h2:mem:security-test;DB_CLOSE_DELAY=-1")
@@ -42,6 +44,9 @@ class SpringSecurityIntegrationTest {
     private CatalogoRepository catalogoRepository;
 
     @Autowired
+    private PrestamoRepository prestamoRepository;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     @Test
@@ -55,6 +60,276 @@ class SpringSecurityIntegrationTest {
     void usuarioAutenticadoPuedeConsultarElCatalogo() throws Exception {
         mockMvc.perform(get("/catalogo").with(user("usuario@bodega.com").roles("USUARIO")))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void catalogoMuestraPanelDeInventarioYFormularioSeparado() throws Exception {
+        MockHttpSession sesionAdmin = new MockHttpSession();
+        sesionAdmin.setAttribute("usuarioRol", "ADMIN");
+        mockMvc.perform(get("/catalogo").session(sesionAdmin).with(user("admin@bodega.com").roles("ADMIN")))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Panel de inventario")))
+                .andExpect(content().string(containsString("/catalogo/nuevo")))
+                .andExpect(content().string(containsString("Herramientas registradas")));
+
+        mockMvc.perform(get("/catalogo/nuevo").with(user("admin@bodega.com").roles("ADMIN")))
+                .andExpect(status().isOk())
+                .andExpect(view().name("formulario-catalogo"))
+                .andExpect(content().string(containsString("Agregar herramienta")));
+    }
+
+    @Test
+    void catalogoDeUsuarioMuestraSoloElConteoYOfrecePrestamoParaHerramientasDisponibles() throws Exception {
+        Catalogo disponible = guardarHerramienta("Herramienta disponible prueba", 4, 2);
+        Catalogo agotada = guardarHerramienta("Herramienta agotada prueba", 2, 0);
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("usuarioRol", "USUARIO");
+        session.setAttribute("usuarioId", 501L);
+
+        try {
+            String contenido = mockMvc.perform(get("/catalogo").session(session)
+                            .with(user("usuario@bodega.com").roles("USUARIO")))
+                    .andExpect(status().isOk())
+                    .andExpect(content().string(containsString("Herramientas registradas")))
+                    .andExpect(content().string(containsString("Mis préstamos")))
+                    .andExpect(content().string(containsString("Realizar préstamo")))
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
+
+            assertFalse(contenido.contains("Unidades disponibles"));
+            assertFalse(contenido.contains("Préstamos activos"));
+            assertFalse(contenido.contains("Unidades en inventario"));
+            assertTrue(contenido.contains("/prestamos/nuevo?idProducto=" + disponible.getId()));
+            assertFalse(contenido.contains("/prestamos/nuevo?idProducto=" + agotada.getId()));
+        } finally {
+            catalogoRepository.deleteAllById(java.util.List.of(disponible.getId(), agotada.getId()));
+        }
+    }
+
+    @Test
+    void accesoDirectoAlPrestamoPreseleccionaLaHerramienta() throws Exception {
+        Catalogo disponible = guardarHerramienta("Herramienta directa prueba", 3, 1);
+        Usuario usuario = guardarUsuario("directo.prueba@bodega.com");
+        try {
+            mockMvc.perform(get("/prestamos/nuevo").param("idProducto", disponible.getId().toString())
+                            .with(user(usuario.getCorreo()).roles("USUARIO")))
+                    .andExpect(status().isOk())
+                    .andExpect(content().string(containsString(
+                            "name=\"idProducto\" value=\"" + disponible.getId() + "\"")))
+                    .andExpect(content().string(containsString("Herramienta seleccionada:")))
+                    .andExpect(content().string(org.hamcrest.Matchers.not(containsString("<select"))))
+                    .andExpect(content().string(containsString("Enviar solicitud")))
+                    .andExpect(content().string(org.hamcrest.Matchers.not(containsString("nombreSolicitante"))))
+                    .andExpect(content().string(org.hamcrest.Matchers.not(containsString("observacionEntrega"))));
+        } finally {
+            catalogoRepository.deleteById(disponible.getId());
+            usuarioRepository.delete(usuario);
+        }
+    }
+
+    @Test
+    void solicitudNuevaQuedaPendienteYAsociadaConLaCuentaAutenticada() throws Exception {
+        Catalogo disponible = guardarHerramienta("Herramienta de cuenta prueba", 2, 1);
+        Usuario usuario = guardarUsuario("solicitud.prueba@bodega.com");
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("usuarioRol", "USUARIO");
+        session.setAttribute("usuarioId", usuario.getId());
+
+        try {
+            mockMvc.perform(post("/prestamos/solicitar").session(session)
+                            .with(user(usuario.getCorreo()).roles("USUARIO"))
+                            .with(csrf())
+                            .param("idProducto", disponible.getId().toString()))
+                    .andExpect(status().is3xxRedirection())
+                    .andExpect(redirectedUrl("/prestamos"));
+
+            Prestamo prestamo = prestamoRepository.findAll().stream()
+                    .filter(registro -> usuario.getId().equals(registro.getIdUsuario()))
+                    .findFirst()
+                    .orElseThrow();
+            assertEquals(usuario.getId(), prestamo.getIdUsuario());
+            assertEquals("Usuario Prueba", prestamo.getNombreSolicitante());
+            assertTrue(prestamo.isEstadoPendiente());
+            assertFalse(prestamo.isEstadoActivo());
+            assertEquals(null, prestamo.getObservacionEntrega());
+            assertEquals(1, catalogoRepository.findById(disponible.getId()).orElseThrow().getDisponibilidad());
+        } finally {
+            prestamoRepository.findAll().stream()
+                    .filter(registro -> usuario.getId().equals(registro.getIdUsuario()))
+                    .forEach(prestamoRepository::delete);
+            catalogoRepository.deleteById(disponible.getId());
+            usuarioRepository.delete(usuario);
+        }
+    }
+
+    @Test
+    void misPrestamosSoloMuestraLosRegistrosDeLaCuentaAutenticada() throws Exception {
+        Usuario usuario = guardarUsuario("mis.prestamos@bodega.com");
+        Usuario otroUsuario = guardarUsuario("otro.usuario@bodega.com");
+        Prestamo propio = guardarPrestamo(usuario.getId(), "Préstamo de mi cuenta prueba");
+        Prestamo ajeno = guardarPrestamo(otroUsuario.getId(), "Préstamo de otra cuenta prueba");
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("usuarioRol", "USUARIO");
+        session.setAttribute("usuarioId", usuario.getId());
+
+        try {
+            String contenido = mockMvc.perform(get("/prestamos").session(session)
+                            .with(user(usuario.getCorreo()).roles("USUARIO")))
+                    .andExpect(status().isOk())
+                    .andExpect(content().string(containsString("Mis Préstamos Activos")))
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
+
+            assertTrue(contenido.contains(propio.getNombreSolicitante()));
+            assertFalse(contenido.contains(ajeno.getNombreSolicitante()));
+        } finally {
+            prestamoRepository.deleteAllById(java.util.List.of(propio.getIdPresamo(), ajeno.getIdPresamo()));
+            usuarioRepository.deleteAll(java.util.List.of(usuario, otroUsuario));
+        }
+    }
+
+    @Test
+    void administradorVeYSolicitaAprobacionDePrestamosPendientes() throws Exception {
+        Catalogo herramienta = guardarHerramienta("Herramienta para aprobación prueba", 3, 2);
+        Prestamo solicitud = guardarPrestamo(900L, "Solicitud pendiente visible");
+        solicitud.setIdProducto(herramienta.getId());
+        solicitud.setEstadoActivo(false);
+        solicitud.setEstadoPendiente(true);
+        prestamoRepository.save(solicitud);
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("usuarioRol", "ADMIN");
+
+        try {
+            mockMvc.perform(get("/prestamos").session(session)
+                            .with(user("admin@bodega.com").roles("ADMIN")))
+                    .andExpect(status().isOk())
+                    .andExpect(content().string(containsString("Solicitudes pendientes de aprobación")))
+                    .andExpect(content().string(containsString("Solicitud pendiente visible")))
+                    .andExpect(content().string(containsString("Aprobar y entregar")))
+                    .andExpect(content().string(containsString("Comentario de salida de la herramienta")))
+                    .andExpect(content().string(containsString("/prestamos#solicitudes")))
+                    .andExpect(content().string(containsString("contador-notificaciones")));
+
+            mockMvc.perform(post("/prestamos/aprobar/" + solicitud.getIdPresamo())
+                            .with(user("admin@bodega.com").roles("ADMIN"))
+                            .with(csrf())
+                            .param("observacionEntrega", "Entregada en buen estado"))
+                    .andExpect(status().is3xxRedirection())
+                    .andExpect(redirectedUrl("/prestamos"));
+
+            Prestamo aprobado = prestamoRepository.findById(solicitud.getIdPresamo()).orElseThrow();
+            assertTrue(aprobado.isEstadoActivo());
+            assertFalse(aprobado.isEstadoPendiente());
+            assertEquals("Entregada en buen estado", aprobado.getObservacionEntrega());
+            assertEquals(1, catalogoRepository.findById(herramienta.getId()).orElseThrow().getDisponibilidad());
+        } finally {
+            prestamoRepository.deleteById(solicitud.getIdPresamo());
+            catalogoRepository.deleteById(herramienta.getId());
+        }
+    }
+
+    @Test
+    void usuarioNoAdministradorNoPuedeAprobarSolicitudes() throws Exception {
+        mockMvc.perform(post("/prestamos/aprobar/1")
+                        .with(user("usuario@bodega.com").roles("USUARIO"))
+                        .with(csrf()))
+                .andExpect(status().isForbidden())
+                .andExpect(forwardedUrl("/acceso-denegado"));
+    }
+
+    @Test
+    void usuarioNoAdministradorNoPuedeRegistrarPrestamosDirectamente() throws Exception {
+        mockMvc.perform(post("/prestamos/guardar")
+                        .with(user("usuario@bodega.com").roles("USUARIO"))
+                        .with(csrf()))
+                .andExpect(status().isForbidden())
+                .andExpect(forwardedUrl("/acceso-denegado"));
+    }
+
+    @Test
+    void usuarioNoAdministradorNoPuedeRegistrarDevoluciones() throws Exception {
+        mockMvc.perform(post("/prestamos/devolver/1")
+                        .with(user("usuario@bodega.com").roles("USUARIO"))
+                        .with(csrf())
+                        .param("observacionDevolucion", "Buen estado"))
+                .andExpect(status().isForbidden())
+                .andExpect(forwardedUrl("/acceso-denegado"));
+    }
+
+    @Test
+    void administradorPuedeRegistrarPrestamoParaPersonaSinCuenta() throws Exception {
+        Catalogo herramienta = guardarHerramienta("Herramienta sin cuenta prueba", 4, 3);
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("usuarioRol", "ADMIN");
+        String solicitante = "Persona sin cuenta registrada";
+
+        try {
+            mockMvc.perform(post("/prestamos/guardar").session(session)
+                            .with(user("admin@bodega.com").roles("ADMIN"))
+                            .with(csrf())
+                            .param("idProducto", herramienta.getId().toString())
+                            .param("nombreSolicitante", solicitante)
+                            .param("fecha", java.time.LocalDate.now().toString())
+                            .param("observacionEntrega", "Entregada en buen estado"))
+                    .andExpect(status().is3xxRedirection())
+                    .andExpect(redirectedUrl("/prestamos"));
+
+            Prestamo prestamo = prestamoRepository.findAll().stream()
+                    .filter(registro -> solicitante.equals(registro.getNombreSolicitante()))
+                    .findFirst()
+                    .orElseThrow();
+            assertEquals(null, prestamo.getIdUsuario());
+            assertTrue(prestamo.isEstadoActivo());
+            assertEquals("Entregada en buen estado", prestamo.getObservacionEntrega());
+            assertEquals(2, catalogoRepository.findById(herramienta.getId()).orElseThrow().getDisponibilidad());
+        } finally {
+            prestamoRepository.findAll().stream()
+                    .filter(registro -> solicitante.equals(registro.getNombreSolicitante()))
+                    .forEach(prestamoRepository::delete);
+            catalogoRepository.deleteById(herramienta.getId());
+        }
+    }
+
+    @Test
+    void administradorFiltraSolicitudesPorIntervaloDeFechas() throws Exception {
+        Prestamo solicitudDentro = guardarPrestamo(901L, "Solicitud dentro intervalo");
+        solicitudDentro.setEstadoActivo(false);
+        solicitudDentro.setEstadoPendiente(true);
+        solicitudDentro.setFecha(java.time.LocalDate.of(2026, 10, 10));
+        prestamoRepository.save(solicitudDentro);
+        Prestamo solicitudFuera = guardarPrestamo(902L, "Solicitud fuera intervalo");
+        solicitudFuera.setEstadoActivo(false);
+        solicitudFuera.setEstadoPendiente(true);
+        solicitudFuera.setFecha(java.time.LocalDate.of(2026, 10, 20));
+        prestamoRepository.save(solicitudFuera);
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("usuarioRol", "ADMIN");
+
+        try {
+            String contenido = mockMvc.perform(get("/prestamos").session(session)
+                            .param("desde", "2026-10-01")
+                            .param("hasta", "2026-10-15")
+                            .with(user("admin@bodega.com").roles("ADMIN")))
+                    .andExpect(status().isOk())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
+
+            assertTrue(contenido.contains("Solicitud dentro intervalo"));
+            assertFalse(contenido.contains("Solicitud fuera intervalo"));
+        } finally {
+            prestamoRepository.deleteAllById(java.util.List.of(
+                    solicitudDentro.getIdPresamo(), solicitudFuera.getIdPresamo()));
+        }
+    }
+
+    @Test
+    void usuarioNoAdministradorNoPuedeAbrirFormularioNuevoDeHerramientas() throws Exception {
+        mockMvc.perform(get("/catalogo/nuevo").with(user("usuario@bodega.com").roles("USUARIO")))
+                .andExpect(status().isForbidden())
+                .andExpect(forwardedUrl("/acceso-denegado"));
     }
 
     @Test
@@ -347,5 +622,35 @@ class SpringSecurityIntegrationTest {
         mockMvc.perform(post("/catalogo/guardar").with(user("admin@bodega.com").roles("ADMIN")))
                 .andExpect(status().isForbidden())
                 .andExpect(forwardedUrl("/acceso-denegado"));
+    }
+
+    private Catalogo guardarHerramienta(String nombre, int cantidad, int disponibilidad) {
+        Catalogo herramienta = new Catalogo();
+        herramienta.setNombre(nombre);
+        herramienta.setCategoria("Prueba");
+        herramienta.setDescripcion("Herramienta usada en pruebas de catálogo.");
+        herramienta.setCantidad(cantidad);
+        herramienta.setDisponibilidad(disponibilidad);
+        return catalogoRepository.save(herramienta);
+    }
+
+    private Usuario guardarUsuario(String correo) {
+        Usuario usuario = new Usuario();
+        usuario.setNombre("Usuario");
+        usuario.setApellido("Prueba");
+        usuario.setCorreo(correo);
+        usuario.setContrasena(passwordEncoder.encode("Prueba123!"));
+        usuario.setRol(RolUsuario.USUARIO);
+        return usuarioRepository.save(usuario);
+    }
+
+    private Prestamo guardarPrestamo(Long idUsuario, String nombreSolicitante) {
+        Prestamo prestamo = new Prestamo();
+        prestamo.setIdUsuario(idUsuario);
+        prestamo.setIdProducto(999L);
+        prestamo.setFecha(java.time.LocalDate.now());
+        prestamo.setNombreSolicitante(nombreSolicitante);
+        prestamo.setEstadoActivo(true);
+        return prestamoRepository.save(prestamo);
     }
 }

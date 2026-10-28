@@ -9,14 +9,47 @@ Enfoque: Instituciones públicas
 - Windows PowerShell (se incluye `mvnw.cmd`, por lo que no es necesario instalar Maven por separado).
 
 ### Iniciar la aplicación
-Desde la raíz del repositorio, ejecutar en la terminal:
+Desde la carpeta `sistema-control-inventario-bodega-automotriz`, ejecutar en la terminal:
 
 .\mvnw.cmd spring-boot:run
 
 
-La primera ejecución puede tardar mientras Maven descarga las dependencias. Cuando la aplicación esté lista, abre [http://localhost:8081](http://localhost:8081) en el navegador. La base de datos H2 se crea y persiste en `sistema-control-inventario-bodega-automotriz\data\bodegadb`.
+La primera ejecución puede tardar mientras Maven descarga las dependencias. Cuando la aplicación esté lista, abre [http://localhost:8081](http://localhost:8081) en el navegador. El puerto predeterminado es `8081`; también se puede cambiar definiendo la variable de entorno `PORT`. La base de datos H2 se crea y persiste en `data\bodegadb`.
 
 Para detener la aplicación, presiona `Ctrl+C` en la terminal donde está ejecutándose.
+
+### Crear y ejecutar el JAR
+Desde la carpeta `sistema-control-inventario-bodega-automotriz`, crea el JAR ejecutable con:
+
+.\mvnw.cmd package
+
+El archivo se genera en `target\sistema-control-inventario-bodega-automotriz-0.0.1-SNAPSHOT.jar`. Para ejecutarlo:
+
+java -jar .\target\sistema-control-inventario-bodega-automotriz-0.0.1-SNAPSHOT.jar
+
+En Render, define `SPRING_PROFILES_ACTIVE=prod` en las variables de entorno (Render proporciona `PORT` automáticamente) y usa como comando de inicio:
+
+java -jar target/sistema-control-inventario-bodega-automotriz-0.0.1-SNAPSHOT.jar
+
+### Desplegar en Render con Docker
+El repositorio incluye un `Dockerfile` en la raíz; Render puede usarlo automáticamente como entorno de ejecución Docker. En Render crea un **Web Service**, conecta este repositorio y deja **Root Directory** vacío para que el contexto sea la raíz del repositorio. Usa el Dockerfile predeterminado (`./Dockerfile`) y deja vacío el comando de inicio: la imagen ya inicia el JAR.
+
+La imagen compila y ejecuta las pruebas con Java 25, y activa el perfil `prod`. Agrega en **Environment** las variables `DB_URL`, `DB_USER` y `DB_PASSWORD` con los datos de Neon. Render proporciona `PORT`; la aplicación lo utiliza automáticamente. No agregues credenciales al Dockerfile ni al repositorio.
+
+### Configurar Neon
+El perfil predeterminado es `dev` y conserva H2. Para usar PostgreSQL en Neon desde la PC o en Render, activa el perfil `prod` mediante `SPRING_PROFILES_ACTIVE=prod` y configura estas variables de entorno:
+
+- `DB_URL`: URL JDBC de Neon, con formato `jdbc:postgresql://<host>/<database>?sslmode=require&channelBinding=require`.
+- `DB_USER`: usuario de la base de datos.
+- `DB_PASSWORD`: contraseña de la base de datos.
+
+En ambos perfiles, el puerto predeterminado es `8081` (o el valor de `PORT` si está definido). En `prod`, la consola H2 se desactiva y Hikari muestra en el log la conexión establecida. Para probar desde la PC, define las tres variables `DB_URL`, `DB_USER` y `DB_PASSWORD` en el entorno del sistema, abre una terminal nueva desde ese entorno, define `SPRING_PROFILES_ACTIVE=prod` y ejecuta:
+
+java -jar .\target\sistema-control-inventario-bodega-automotriz-0.0.1-SNAPSHOT.jar
+
+Confirma en el log `The following 1 profile is active: "prod"`, `HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@...`, `Tomcat started on port 8081 (http)` y `Started SistemaControlInventarioBodegaAutomotrizApplication`. Si `PORT` tiene otro valor, Tomcat mostrará ese puerto en lugar de `8081`. Mantén las credenciales fuera del repositorio y no las incluyas en comandos que queden guardados en el historial de la terminal.
+
+Las contraseñas nuevas deben tener entre 6 y 72 caracteres, incluir al menos una minúscula, una mayúscula, un número y un carácter especial. No se permiten `()`, `-`, `´`, `”`, `` ` `` ni `’`.
 
 ### Ejecutar las pruebas
 Desde la carpeta `sistema-control-inventario-bodega-automotriz`, ejecutar:
@@ -61,6 +94,6 @@ Para lograrlo, durante el curso se desarrollará una plataforma que incluirá un
 Instituto Técnico Industrial Chimaltenango, Chimaltenango 
 
 ## Autor
-Bilda Quelex - 2396125
-Camila Pío - 2143225
-Victor Sitamul - 2028719 
+- Bilda Quelex - 2396125
+- Camila Pío - 2143225
+- Victor Sitamul - 2028719 

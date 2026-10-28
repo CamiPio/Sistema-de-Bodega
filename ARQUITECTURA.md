@@ -2,7 +2,7 @@
  
 Usuario: Nombre, Apellido, Teléfono, Correo, Rol, Contraseña  
 
-	Regla: 6 caracteres como mínimo, minusculas, mayusculas, números y 	caracteres especiales. No se permiten () - ´”`’   
+	Regla: entre 6 y 72 caracteres, con minúsculas, mayúsculas, números y al menos un carácter especial. No se permiten (), -, ´, ”, ` ni ’.
 
 
 Catalogo: Nombre, Categoría, Descripción, Cantidad, Disponibilidad, Estado, Observación, id_categoría  

@@ -80,9 +80,23 @@
       border-radius: 3px;
       margin-bottom: 5px;
     }
+    .filtro-fechas {
+      display: flex;
+      align-items: end;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 16px 0;
+    }
+    .filtro-fechas input {
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
   </style>
+  <link rel="stylesheet" th:href="@{/app.css}" />
 </head>
-<body>
+
+<body class="app-page">
 
   <!-- INSERCIÓN DE LA BARRA DE MENÚ PROFESIONAL -->
   <div th:replace="barraMenu :: menu"></div>
@@ -92,15 +106,59 @@
   </div>
 
   <!-- Enlaces actualizados con la sintaxis de Thymeleaf th:href -->
-  <div class="nav-links">
-    <a th:href="@{/catalogo}">Ir al Catálogo</a>
-    <a th:href="@{/prestamos/nuevo}">Registrar Nuevo Préstamo</a>
-  </div>
-
-  <h2 style="color: #003366;">Listado de Préstamos Activos</h2>
+  <h2 style="color: #003366;"
+      th:text="${esAdministrador ? 'Solicitudes y préstamos' : 'Mis Préstamos Activos'}">
+    Mis Préstamos Activos
+  </h2>
   <p th:if="${mensajePrestamo}" th:text="${mensajePrestamo}" role="status"></p>
   <p th:if="${errorPrestamo}" th:text="${errorPrestamo}" role="alert"></p>
 
+  <section id="solicitudes" th:if="${esAdministrador}">
+    <form th:action="@{/prestamos}" method="get" class="filtro-fechas">
+      <label for="fechaDesde">Desde</label>
+      <input id="fechaDesde" type="date" name="desde" th:value="${fechaDesde}">
+      <label for="fechaHasta">Hasta</label>
+      <input id="fechaHasta" type="date" name="hasta" th:value="${fechaHasta}">
+      <button type="submit" class="btn-return">Buscar por fecha</button>
+      <a th:href="@{/prestamos}">Limpiar</a>
+    </form>
+    <p th:if="${errorFechas}" th:text="${errorFechas}" role="alert"></p>
+    <h3>Solicitudes pendientes de aprobación</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>ID solicitud</th>
+          <th>ID herramienta</th>
+          <th>Solicitante</th>
+          <th>Fecha</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="p : ${solicitudesPendientes}">
+          <td th:text="${p.idPresamo}">1</td>
+          <td th:text="${p.idProducto}">1</td>
+          <td th:text="${p.nombreSolicitante}">Solicitante</td>
+          <td th:text="${p.fecha}">2026-06-13</td>
+          <td>
+            <form th:action="@{/prestamos/aprobar/{id}(id=${p.idPresamo})}" method="post">
+              <input type="text" name="observacionEntrega" class="input-obs" maxlength="500"
+                     placeholder="Comentario de salida de la herramienta" required>
+              <button type="submit" class="btn-return">Aprobar y entregar</button>
+            </form>
+            <form th:action="@{/prestamos/rechazar/{id}(id=${p.idPresamo})}" method="post">
+              <button type="submit" class="btn-return" style="background-color:#b42318">Rechazar</button>
+            </form>
+          </td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(solicitudesPendientes)}">
+          <td colspan="5" style="text-align:center;color:#777">No hay solicitudes pendientes.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <h3 th:text="${esAdministrador ? 'Préstamos activos' : 'Mis solicitudes y préstamos'}">Mis solicitudes y préstamos</h3>
   <table>
     <thead>
       <tr>
@@ -114,28 +172,34 @@
       </tr>
     </thead>
     <tbody>
-      <!-- Recorremos la lista de préstamos enviada desde el controlador -->
       <tr th:each="p : ${prestamos}">
         <td th:text="${p.idPresamo}">1</td>
         <td th:text="${p.idProducto}">1</td>
         <td th:text="${p.nombreSolicitante}">Juan Pérez</td>
         <td th:text="${p.fecha}">2026-06-13</td>
         <td>
-          <span th:if="${p.estadoActivo == true}" style="color: orange; font-weight: bold;">Prestado</span>
-          <span th:if="${p.estadoActivo == false}" style="color: green; font-weight: bold;">Entregado</span>
+          <span th:if="${p.estadoPendiente}" style="color:#b77911;font-weight:bold">Pendiente</span>
+          <span th:if="${p.estadoActivo}" style="color:orange;font-weight:bold">Prestado</span>
+          <span th:if="${p.estadoRechazado}" style="color:#b42318;font-weight:bold">Rechazado</span>
+          <span th:if="${!p.estadoPendiente and !p.estadoActivo and !p.estadoRechazado}"
+                style="color:green;font-weight:bold">Devuelto</span>
         </td>
-        <td th:text="${p.observacionEntrega}">Sin observaciones</td>
         <td>
-          <!-- Formulario individual para la devolución apuntando a idPresamo -->
-          <form th:if="${p.estadoActivo}" th:action="@{/prestamos/devolver/{id}(id=${p.idPresamo})}" method="POST">
-            <input type="text" name="observacionEntrega" class="input-obs" maxlength="500" placeholder="Ej. Buen estado / Mantenimiento" required />
-            <button type="submit" class="btn-return">Marcar como Entregado</button>
+          <div><strong>Salida:</strong> <span th:text="${p.observacionEntrega ?: 'Sin comentario'}">Sin comentario</span></div>
+          <div th:if="${p.observacionDevolucion != null}">
+            <strong>Devolución:</strong> <span th:text="${p.observacionDevolucion}">Sin observaciones</span>
+          </div>
+        </td>
+        <td>
+          <form th:if="${esAdministrador and p.estadoActivo}"
+                th:action="@{/prestamos/devolver/{id}(id=${p.idPresamo})}" method="POST">
+            <input type="text" name="observacionDevolucion" class="input-obs" maxlength="500" placeholder="Estado al devolver" required />
+            <button type="submit" class="btn-return">Registrar devolución</button>
           </form>
         </td>
       </tr>
-      <!-- Mensaje si no hay registros -->
       <tr th:if="${#lists.isEmpty(prestamos)}">
-        <td colspan="7" style="text-align: center; color: #777;">No hay préstamos activos registrados en este momento.</td>
+        <td colspan="7" style="text-align: center; color: #777;">No hay solicitudes ni préstamos registrados.</td>
       </tr>
     </tbody>
   </table>
