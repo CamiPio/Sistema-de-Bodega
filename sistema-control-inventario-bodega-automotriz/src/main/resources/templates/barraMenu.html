@@ -22,17 +22,15 @@
                 <ul class="accesos-directos" id="accesosDirectos">
                     <!-- Enlaces apuntando a los endpoints de tus controladores en Spring Boot -->
                     <li><a th:href="@{/catalogo}">Catálogo</a></li>
-                    <li th:if="${session.usuarioRol == 'ADMIN'}"><a th:href="@{/usuarios/lista}">Lista de Usuarios</a></li>
                     <!-- Acciones para los recursos -->
                     <li style="position: relative;">
                         <button id="opRecurso" type="button" aria-expanded="false" aria-controls="listaRecurso">Acciones</button>
                         <div id="listaRecurso" class="lista-perfil">
-                            <a th:href="@{/catalogo}">Ver Catálogo</a>
                             <a th:if="${session.usuarioRol != 'ADMIN'}" th:href="@{/prestamos}">Mis préstamos</a>
                             <a th:if="${session.usuarioRol != 'ADMIN'}" th:href="@{/catalogo#herramientas}">Realizar préstamo</a>
                             <a th:if="${session.usuarioRol == 'ADMIN'}" th:href="@{/prestamos}">Solicitudes y préstamos</a>
                             <a th:if="${session.usuarioRol == 'ADMIN'}" th:href="@{/prestamos/nuevo}">Registrar préstamo a persona</a>
-                            <a th:if="${session.usuarioRol == 'ADMIN'}" th:href="@{/usuarios/lista}">Ver Usuarios</a>
+                            <a th:if="${session.usuarioRol == 'ADMIN'}" th:href="@{/usuarios/lista}">Lista de Usuarios</a>
                         </div>
                     </li>
 
@@ -63,6 +61,8 @@
                     <span class="contador-notificaciones" th:if="${solicitudesPendientesCount > 0}"
                           th:text="${solicitudesPendientesCount}">0</span>
                 </a>
+                <span class="notificaciones-placeholder" th:unless="${session.usuarioRol == 'ADMIN'}"
+                      aria-hidden="true"></span>
 
                 <button class="boton-menu" id="menuBtn" type="button" aria-expanded="false" aria-controls="accesosDirectos" aria-label="Abrir menú de navegación">
                     ☰

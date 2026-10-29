@@ -366,6 +366,40 @@ class SpringSecurityIntegrationTest {
     }
 
     @Test
+    void menuConservaLaPosicionDeSusElementosParaAmbosRolesYNotificacionesSoloParaAdmin() throws Exception {
+        MockHttpSession sesionAdmin = new MockHttpSession();
+        sesionAdmin.setAttribute("usuarioRol", "ADMIN");
+        String contenidoAdmin = mockMvc.perform(get("/catalogo").session(sesionAdmin)
+                        .with(user("admin@bodega.com").roles("ADMIN")))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        MockHttpSession sesionUsuario = new MockHttpSession();
+        sesionUsuario.setAttribute("usuarioRol", "USUARIO");
+        String contenidoUsuario = mockMvc.perform(get("/catalogo").session(sesionUsuario)
+                        .with(user("usuario@bodega.com").roles("USUARIO")))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        assertTrue(contenidoAdmin.indexOf("Catálogo") < contenidoAdmin.indexOf("id=\"opRecurso\""));
+        assertTrue(contenidoAdmin.indexOf("id=\"opRecurso\"") < contenidoAdmin.indexOf("id=\"opPerfil\""));
+        assertTrue(contenidoAdmin.indexOf("id=\"opPerfil\"") < contenidoAdmin.indexOf("class=\"contenedor-busqueda\""));
+        assertTrue(contenidoAdmin.indexOf("class=\"contenedor-busqueda\"") < contenidoAdmin.indexOf("id=\"menuBtn\""));
+        assertTrue(contenidoUsuario.indexOf("Catálogo") < contenidoUsuario.indexOf("id=\"opRecurso\""));
+        assertTrue(contenidoUsuario.indexOf("id=\"opRecurso\"") < contenidoUsuario.indexOf("id=\"opPerfil\""));
+        assertTrue(contenidoUsuario.indexOf("id=\"opPerfil\"") < contenidoUsuario.indexOf("class=\"contenedor-busqueda\""));
+        assertTrue(contenidoUsuario.indexOf("class=\"contenedor-busqueda\"") < contenidoUsuario.indexOf("id=\"menuBtn\""));
+        assertTrue(contenidoAdmin.indexOf("id=\"opRecurso\"") < contenidoAdmin.indexOf("Lista de Usuarios"));
+        assertTrue(contenidoAdmin.contains("notificaciones-superior"));
+        assertTrue(contenidoUsuario.contains("notificaciones-placeholder"));
+        assertFalse(contenidoUsuario.contains("notificaciones-superior"));
+    }
+
+    @Test
     void recursoJavaScriptDeLaBarraEsAccesible() throws Exception {
         mockMvc.perform(get("/barraMenu.js"))
                 .andExpect(status().isOk())
@@ -390,6 +424,8 @@ class SpringSecurityIntegrationTest {
                 .andExpect(content().string(containsString("data-password-toggle=\"contrasenaLogin\"")))
                 .andExpect(content().string(containsString("data-password-toggle=\"contrasenaRegistro\"")))
                 .andExpect(content().string(containsString("data-password-policy")))
+                .andExpect(content().string(containsString("querySelectorAll('.boton-registro')")))
+                .andExpect(content().string(containsString("querySelectorAll('.boton-iniciar')")))
                 .andExpect(content().string(containsString("password-validation.js")));
     }
 

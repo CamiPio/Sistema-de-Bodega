@@ -103,15 +103,16 @@
     <!-- Script original para la animación deslizante de los paneles -->
     <script>
         const contenedor = document.querySelector('.contenedor');
-        const botonRegistro = document.querySelector('.boton-registro');
-        const botonLogin = document.querySelector('.boton-iniciar');
-
-        botonRegistro.addEventListener('click', () => {
-            contenedor.classList.add('active');
+        document.querySelectorAll('.boton-registro').forEach((boton) => {
+            boton.addEventListener('click', () => {
+                contenedor.classList.add('active');
+            });
         });
 
-        botonLogin.addEventListener('click', () => {
-            contenedor.classList.remove('active');
+        document.querySelectorAll('.boton-iniciar').forEach((boton) => {
+            boton.addEventListener('click', () => {
+                contenedor.classList.remove('active');
+            });
         });
     </script>
     <script th:src="@{/password-toggle.js}" defer></script>
