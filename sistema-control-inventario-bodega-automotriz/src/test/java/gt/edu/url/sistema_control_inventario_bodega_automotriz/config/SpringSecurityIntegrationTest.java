@@ -417,10 +417,18 @@ class SpringSecurityIntegrationTest {
                 .andExpect(content().string(containsString("faltan ${remaining}")))
                 .andExpect(content().string(containsString("if (forbidden.length > 0)")));
 
+        mockMvc.perform(get("/registration-feedback.js"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("5500")))
+                .andExpect(content().string(containsString("3500")))
+                .andExpect(content().string(containsString("registro:validacion-contrasena")));
+
         mockMvc.perform(get("/login"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("action=\"/auth/login\"")))
                 .andExpect(content().string(containsString("action=\"/auth/registrar\"")))
+                .andExpect(content().string(containsString("id=\"registroNotificaciones\"")))
+                .andExpect(content().string(containsString("registration-feedback.js")))
                 .andExpect(content().string(containsString("data-password-toggle=\"contrasenaLogin\"")))
                 .andExpect(content().string(containsString("data-password-toggle=\"contrasenaRegistro\"")))
                 .andExpect(content().string(containsString("data-password-policy")))
@@ -463,6 +471,163 @@ class SpringSecurityIntegrationTest {
     void administradorPuedeConsultarLaListaDeUsuarios() throws Exception {
         mockMvc.perform(get("/usuarios/lista").with(user("admin@bodega.com").roles("ADMIN")))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void historialDePrestamosEsExclusivoDeAdminYPermiteFiltrarRegistrosTerminados() throws Exception {
+        Catalogo rotomartillo = guardarHerramienta("Rotomartillo historial", 3, 3);
+        rotomartillo.setCategoria("Herramientas eléctricas");
+        catalogoRepository.save(rotomartillo);
+        Catalogo llave = guardarHerramienta("Llave historial", 2, 2);
+        llave.setCategoria("Herramientas manuales");
+        catalogoRepository.save(llave);
+
+        Prestamo carla = guardarPrestamo(null, "Carla Historial");
+        carla.setIdProducto(rotomartillo.getId());
+        carla.setEstadoActivo(false);
+        carla.setObservacionDevolucion("Devuelto en buen estado");
+        prestamoRepository.save(carla);
+
+        Prestamo carlos = guardarPrestamo(null, "Carlos Historial");
+        carlos.setIdProducto(llave.getId());
+        carlos.setFecha(java.time.LocalDate.now().minusDays(1));
+        carlos.setEstadoActivo(false);
+        carlos.setObservacionDevolucion("Devuelto sin daños");
+        prestamoRepository.save(carlos);
+
+        Prestamo activo = guardarPrestamo(null, "Usuario activo fuera de historial");
+        activo.setIdProducto(rotomartillo.getId());
+        Prestamo rechazado = guardarPrestamo(null, "Solicitud rechazada en historial");
+        rechazado.setIdProducto(llave.getId());
+        rechazado.setEstadoActivo(false);
+        rechazado.setEstadoPendiente(false);
+        rechazado.setEstadoRechazado(true);
+        prestamoRepository.save(rechazado);
+
+        try {
+            mockMvc.perform(get("/prestamos/historial")
+                            .with(user("usuario@bodega.com").roles("USUARIO")))
+                    .andExpect(status().isForbidden());
+
+            String todos = mockMvc.perform(get("/prestamos/historial")
+                            .with(user("admin@bodega.com").roles("ADMIN")))
+                    .andExpect(status().isOk())
+                    .andExpect(view().name("historial-prestamos"))
+                    .andExpect(content().string(containsString("Carla Historial")))
+                    .andExpect(content().string(containsString("Carlos Historial")))
+                    .andExpect(content().string(containsString("Solicitud rechazada en historial")))
+                    .andExpect(content().string(containsString("Solicitud rechazada</span>")))
+                    .andExpect(content().string(containsString("Devuelto en buen estado")))
+                    .andExpect(content().string(containsString("Rotomartillo historial")))
+                    .andExpect(content().string(containsString("name=\"desde\"")))
+                    .andExpect(content().string(containsString("name=\"hasta\"")))
+                    .andReturn().getResponse().getContentAsString();
+            assertFalse(todos.contains("Usuario activo fuera de historial"));
+
+            mockMvc.perform(get("/prestamos/historial").param("usuario", "carla")
+                            .with(user("admin@bodega.com").roles("ADMIN")))
+                    .andExpect(status().isOk())
+                    .andExpect(content().string(containsString("Carla Historial")))
+                    .andExpect(content().string(org.hamcrest.Matchers.not(containsString("Carlos Historial"))));
+
+            mockMvc.perform(get("/prestamos/historial").param("producto", llave.getId().toString())
+                            .with(user("admin@bodega.com").roles("ADMIN")))
+                    .andExpect(status().isOk())
+                    .andExpect(content().string(containsString("Carlos Historial")))
+                    .andExpect(content().string(org.hamcrest.Matchers.not(containsString("Carla Historial"))));
+
+            mockMvc.perform(get("/prestamos/historial").param("categoria", "Herramientas eléctricas")
+                            .with(user("admin@bodega.com").roles("ADMIN")))
+                    .andExpect(status().isOk())
+                    .andExpect(content().string(containsString("Carla Historial")))
+                    .andExpect(content().string(org.hamcrest.Matchers.not(containsString("Carlos Historial"))));
+
+            mockMvc.perform(get("/prestamos/historial")
+                            .param("desde", java.time.LocalDate.now().toString())
+                            .with(user("admin@bodega.com").roles("ADMIN")))
+                    .andExpect(status().isOk())
+                    .andExpect(content().string(containsString("Carla Historial")))
+                    .andExpect(content().string(org.hamcrest.Matchers.not(containsString("Carlos Historial"))));
+
+            mockMvc.perform(get("/prestamos/historial")
+                            .param("desde", java.time.LocalDate.now().toString())
+                            .param("hasta", java.time.LocalDate.now().minusDays(1).toString())
+                            .with(user("admin@bodega.com").roles("ADMIN")))
+                    .andExpect(status().isOk())
+                    .andExpect(content().string(containsString("fecha inicial no puede ser posterior")));
+        } finally {
+            prestamoRepository.deleteAllById(java.util.List.of(carla.getIdPresamo(), carlos.getIdPresamo(),
+                    activo.getIdPresamo(), rechazado.getIdPresamo()));
+            catalogoRepository.deleteAllById(java.util.List.of(rotomartillo.getId(), llave.getId()));
+        }
+    }
+
+    @Test
+    void solicitudesYActivosAplicanFiltrosDeUsuarioHerramientaYCategoria() throws Exception {
+        Catalogo herramientaA = guardarHerramienta("Herramienta filtro A", 4, 4);
+        herramientaA.setCategoria("Categoría filtro A");
+        catalogoRepository.save(herramientaA);
+        Catalogo herramientaB = guardarHerramienta("Herramienta filtro B", 4, 4);
+        herramientaB.setCategoria("Categoría filtro B");
+        catalogoRepository.save(herramientaB);
+
+        Prestamo activoA = guardarPrestamo(null, "Solicitante filtro A");
+        activoA.setIdProducto(herramientaA.getId());
+        prestamoRepository.save(activoA);
+        Prestamo solicitudA = guardarPrestamo(null, "Solicitante filtro A");
+        solicitudA.setIdProducto(herramientaA.getId());
+        solicitudA.setEstadoActivo(false);
+        solicitudA.setEstadoPendiente(true);
+        prestamoRepository.save(solicitudA);
+
+        Prestamo activoB = guardarPrestamo(null, "Solicitante filtro B");
+        activoB.setIdProducto(herramientaB.getId());
+        prestamoRepository.save(activoB);
+        Prestamo solicitudB = guardarPrestamo(null, "Solicitante filtro B");
+        solicitudB.setIdProducto(herramientaB.getId());
+        solicitudB.setEstadoActivo(false);
+        solicitudB.setEstadoPendiente(true);
+        prestamoRepository.save(solicitudB);
+
+        try {
+            String porSolicitante = mockMvc.perform(get("/prestamos").param("usuario", "filtro A")
+                            .with(user("admin@bodega.com").roles("ADMIN")))
+                    .andExpect(status().isOk())
+                    .andReturn().getResponse().getContentAsString();
+            assertTrue(porSolicitante.contains("Solicitante filtro A"));
+            assertFalse(porSolicitante.contains("Solicitante filtro B"));
+            assertTrue(porSolicitante.contains("name=\"desde\""));
+            assertTrue(porSolicitante.contains("name=\"hasta\""));
+            assertTrue(porSolicitante.contains("name=\"categoria\""));
+            assertTrue(porSolicitante.contains("name=\"producto\""));
+
+            String porHerramienta = mockMvc.perform(get("/prestamos")
+                            .param("producto", herramientaB.getId().toString())
+                            .with(user("admin@bodega.com").roles("ADMIN")))
+                    .andExpect(status().isOk())
+                    .andReturn().getResponse().getContentAsString();
+            assertTrue(porHerramienta.contains("Solicitante filtro B"));
+            assertFalse(porHerramienta.contains("Solicitante filtro A"));
+
+            String porCategoria = mockMvc.perform(get("/prestamos").param("categoria", "Categoría filtro A")
+                            .with(user("admin@bodega.com").roles("ADMIN")))
+                    .andExpect(status().isOk())
+                    .andReturn().getResponse().getContentAsString();
+            assertTrue(porCategoria.contains("Solicitante filtro A"));
+            assertFalse(porCategoria.contains("Solicitante filtro B"));
+        } finally {
+            prestamoRepository.deleteAllById(java.util.List.of(activoA.getIdPresamo(), solicitudA.getIdPresamo(),
+                    activoB.getIdPresamo(), solicitudB.getIdPresamo()));
+            catalogoRepository.deleteAllById(java.util.List.of(herramientaA.getId(), herramientaB.getId()));
+        }
+    }
+
+    @Test
+    void estilosDePrestamosEstanDisponiblesParaLasDosVistas() throws Exception {
+        mockMvc.perform(get("/prestamos.css"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString(".tabla-prestamos")))
+                .andExpect(content().string(containsString(".filtros-prestamos")));
     }
 
     @Test

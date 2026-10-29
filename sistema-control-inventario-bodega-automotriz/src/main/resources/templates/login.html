@@ -11,6 +11,8 @@
 </head>
 <body>
 
+    <div id="registroNotificaciones" class="registro-notificaciones" aria-live="polite" aria-atomic="false"></div>
+
     <div class="contenedor" th:classappend="${mostrarRegistro} ? 'active' : ''">
         
         <!-- CAJA DE INICIO DE SESIÓN -->
@@ -43,24 +45,29 @@
         <div class="caja-formulario registro">
             <form th:action="@{/auth/registrar}" th:object="${usuarioRegistro}" method="post">
                 <h1>Registro de Usuario</h1>   
-                <p th:if="${mensajeRegistro}" th:text="${mensajeRegistro}" role="status"></p>
-                <p th:if="${errorRegistro}" th:text="${errorRegistro}" role="alert"></p>
+                <p class="mensaje-validacion-registro" data-registro-aviso="success"
+                   th:if="${mensajeRegistro}" th:text="${mensajeRegistro}"></p>
+                <p class="mensaje-validacion-registro" data-registro-aviso="error"
+                   th:if="${errorRegistro}" th:text="${errorRegistro}"></p>
                 
                 <div class="ingreso-datos">
                     <input type="email" th:field="*{correo}" maxlength="254" placeholder="Correo electrónico" required>
-                    <span th:errors="*{correo}" role="alert"></span>
+                    <span class="mensaje-validacion-registro" data-registro-aviso="error"
+                          th:errors="*{correo}"></span>
                     <svg><i class="fa-solid fa-envelope"></i></svg>
                  </div>
 
                  <div class="ingreso-datos">
                     <input type="text" th:field="*{nombre}" maxlength="100" placeholder="Nombre" required>
-                    <span th:errors="*{nombre}" role="alert"></span>
+                    <span class="mensaje-validacion-registro" data-registro-aviso="error"
+                          th:errors="*{nombre}"></span>
                     <svg><i class="fa-solid fa-user"></i></svg>
                  </div>
 
                  <div class="ingreso-datos">
                     <input type="text" th:field="*{apellido}" maxlength="100" placeholder="Apellido" required>
-                    <span th:errors="*{apellido}" role="alert"></span>
+                    <span class="mensaje-validacion-registro" data-registro-aviso="error"
+                          th:errors="*{apellido}"></span>
                     <svg><i class="fa-solid fa-user"></i></svg>
                  </div>
                 
@@ -115,6 +122,7 @@
             });
         });
     </script>
+    <script th:src="@{/registration-feedback.js}" defer></script>
     <script th:src="@{/password-toggle.js}" defer></script>
     <script th:src="@{/password-validation.js}" defer></script>
 </body>

@@ -1,0 +1,257 @@
+.prestamos-page {
+    font-family: Arial, sans-serif;
+}
+
+.prestamos-page main {
+    width: min(1400px, 100%);
+    padding: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+.prestamos-header {
+    margin: 20px 0;
+    padding: 15px;
+    border-radius: 4px;
+    background: #007bff;
+    color: #fff;
+    text-align: center;
+}
+
+.prestamos-header h1 {
+    margin: 0 0 6px;
+    color: #fff;
+    font-size: 22px;
+}
+
+.prestamos-header p {
+    margin: 0;
+    color: #fff;
+}
+
+.prestamos-eyebrow {
+    display: none;
+}
+
+.filtros-prestamos {
+    display: flex;
+    align-items: end;
+    flex-wrap: wrap;
+    column-gap: 18px;
+    row-gap: 14px;
+    margin: 16px 0;
+    padding: 0;
+}
+
+.filtros-prestamos label {
+    display: grid;
+    min-width: min(200px, 100%);
+    flex: 1 1 200px;
+    gap: 6px;
+    color: #263445;
+    font-size: 14px;
+    font-weight: 400;
+}
+
+.filtros-prestamos input,
+.filtros-prestamos select,
+.input-obs {
+    width: 100%;
+    height: 40px;
+    box-sizing: border-box;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background: #fff;
+    color: #333;
+    font: inherit;
+}
+
+.filtros-prestamos input:focus,
+.filtros-prestamos select:focus,
+.input-obs:focus {
+    border-color: #007bff;
+    outline: 2px solid rgba(0, 123, 255, .16);
+}
+
+.acciones-filtros,
+.acciones-tabla {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.acciones-filtros {
+    flex: 0 0 100%;
+    margin-top: 4px;
+}
+
+.acciones-filtros a,
+.acciones-filtros button,
+.boton-prestamo {
+    display: inline-flex;
+    height: 40px;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 12px;
+    border: 0;
+    border-radius: 4px;
+    background: #28a745;
+    color: #fff;
+    font: inherit;
+    font-weight: bold;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.acciones-filtros a:hover,
+.acciones-filtros button:hover,
+.boton-prestamo:hover {
+    background: #218838;
+}
+
+.acciones-filtros a {
+    background: #004085;
+}
+
+.acciones-filtros a:hover {
+    background: #003366;
+}
+
+.boton-prestamo.peligro {
+    background: #b42318;
+}
+
+.boton-prestamo.peligro:hover {
+    background: #912018;
+}
+
+.prestamos-section-title {
+    margin: 22px 0 12px;
+    color: #003366;
+    font-size: 1.25rem;
+}
+
+.tabla-prestamos {
+    display: table;
+    width: 100%;
+    margin: 12px 0 24px;
+    border-collapse: collapse;
+    border-radius: 0;
+    background: #fff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, .05);
+    overflow: visible;
+}
+
+.tabla-prestamos th {
+    padding: 10px;
+    background: #007bff;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+    text-align: left;
+}
+
+.tabla-prestamos td {
+    padding: 10px;
+    border: 1px solid #ddd;
+    color: #333;
+    font-size: 14px;
+    vertical-align: middle;
+}
+
+.tabla-prestamos tbody tr:hover {
+    background: #f8fbff;
+}
+
+.tabla-prestamos .sin-resultados {
+    padding: 24px;
+    color: #777;
+    text-align: center;
+}
+
+.tabla-prestamos .input-obs {
+    margin-bottom: 5px;
+}
+
+.estado-prestamo {
+    display: inline-block;
+    padding: 4px 9px;
+    border-radius: 999px;
+    font-size: .78rem;
+    font-weight: 750;
+    white-space: nowrap;
+}
+
+.estado-prestamo.pendiente {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.estado-prestamo.activo {
+    background: #cce5ff;
+    color: #004085;
+}
+
+.estado-prestamo.rechazado {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.estado-prestamo.devuelto {
+    background: #d4edda;
+    color: #155724;
+}
+
+.aviso-prestamo {
+    margin: 12px 0;
+    padding: 12px 15px;
+    border: 1px solid;
+    border-radius: 4px;
+}
+
+.aviso-prestamo.exito {
+    border-color: #c3e6cb;
+    background: #d4edda;
+    color: #155724;
+}
+
+.aviso-prestamo.error {
+    border-color: #f5c6cb;
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.resumen-prestamos {
+    margin: 14px 0;
+    color: #64748b;
+}
+
+@media (max-width: 768px) {
+    .prestamos-page main {
+        width: 100%;
+    }
+
+    .filtros-prestamos {
+        align-items: stretch;
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    .acciones-filtros {
+        flex-basis: auto;
+        margin-top: 0;
+    }
+
+    .filtros-prestamos label {
+        flex-basis: auto;
+    }
+
+    .tabla-prestamos {
+        display: block;
+        width: 100%;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+}

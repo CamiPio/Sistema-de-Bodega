@@ -1,10 +1,17 @@
 package gt.edu.url.sistema_control_inventario_bodega_automotriz.controller;
 
 import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
+import java.util.TreeSet;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.springframework.format.annotation.DateTimeFormat;
+import gt.edu.url.sistema_control_inventario_bodega_automotriz.model.Catalogo;
 import gt.edu.url.sistema_control_inventario_bodega_automotriz.model.Prestamo;
 import gt.edu.url.sistema_control_inventario_bodega_automotriz.model.Usuario;
 import gt.edu.url.sistema_control_inventario_bodega_automotriz.service.CatalogoService;
@@ -44,12 +51,23 @@ public class PrestamoController {
     public String listarPrestamosActivos(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate desde,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta,
+            @RequestParam(required = false, defaultValue = "") String usuario,
+            @RequestParam(required = false) Long producto,
+            @RequestParam(required = false, defaultValue = "") String categoria,
             Model model, Authentication authentication) {
         boolean esAdministrador = esAdministrador(authentication);
         model.addAttribute("esAdministrador", esAdministrador);
         if (esAdministrador) {
-            List<Prestamo> prestamos = prestamoService.listarActivos();
-            List<Prestamo> solicitudes = prestamoService.listarPendientes();
+            List<Catalogo> productos = catalogoService.listarTodos();
+            Map<Long, Catalogo> productosPorId = productos.stream()
+                    .collect(Collectors.toMap(Catalogo::getId, Function.identity()));
+            String filtroUsuario = usuario.trim();
+            String usuarioNormalizado = filtroUsuario.toLowerCase(Locale.ROOT);
+            String filtroCategoria = categoria.trim();
+            List<Prestamo> prestamos = filtrarPorCriterios(prestamoService.listarActivos(),
+                    usuarioNormalizado, producto, filtroCategoria, productosPorId);
+            List<Prestamo> solicitudes = filtrarPorCriterios(prestamoService.listarPendientes(),
+                    usuarioNormalizado, producto, filtroCategoria, productosPorId);
             if (desde != null && hasta != null && desde.isAfter(hasta)) {
                 model.addAttribute("errorFechas", "La fecha inicial no puede ser posterior a la fecha final.");
                 prestamos = List.of();
@@ -58,6 +76,16 @@ public class PrestamoController {
                 prestamos = filtrarPorFechas(prestamos, desde, hasta);
                 solicitudes = filtrarPorFechas(solicitudes, desde, hasta);
             }
+            TreeSet<String> categorias = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+            productos.stream().map(Catalogo::getCategoria).filter(Objects::nonNull).forEach(categorias::add);
+            model.addAttribute("productos", productos.stream()
+                    .sorted(Comparator.comparing(Catalogo::getNombre, String.CASE_INSENSITIVE_ORDER))
+                    .toList());
+            model.addAttribute("productosPorId", productosPorId);
+            model.addAttribute("categorias", categorias);
+            model.addAttribute("filtroUsuario", filtroUsuario);
+            model.addAttribute("filtroProducto", producto);
+            model.addAttribute("filtroCategoria", filtroCategoria);
             model.addAttribute("prestamos", prestamos);
             model.addAttribute("solicitudesPendientes", solicitudes);
             model.addAttribute("fechaDesde", desde);
@@ -66,6 +94,52 @@ public class PrestamoController {
             model.addAttribute("prestamos", prestamoService.listarPorUsuario(obtenerUsuario(authentication).getId()));
         }
         return "prestamos-activos";
+    }
+
+    @GetMapping("/historial")
+    public String listarHistorial(@RequestParam(required = false, defaultValue = "") String usuario,
+                                  @RequestParam(required = false) Long producto,
+                                  @RequestParam(required = false, defaultValue = "") String categoria,
+                                  @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate desde,
+                                  @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta,
+                                  Model model) {
+        List<Catalogo> productos = catalogoService.listarTodos();
+        Map<Long, Catalogo> productosPorId = productos.stream()
+                .collect(Collectors.toMap(Catalogo::getId, Function.identity()));
+        String filtroUsuario = usuario.trim();
+        String filtroCategoria = categoria.trim();
+        String usuarioNormalizado = filtroUsuario.toLowerCase(Locale.ROOT);
+        List<Prestamo> historial = prestamoService.listarTerminados().stream()
+                .filter(prestamo -> filtroUsuario.isEmpty()
+                        || prestamo.getNombreSolicitante().toLowerCase(Locale.ROOT)
+                                .contains(usuarioNormalizado))
+                .filter(prestamo -> producto == null || producto.equals(prestamo.getIdProducto()))
+                .filter(prestamo -> filtroCategoria.isEmpty()
+                        || (productosPorId.containsKey(prestamo.getIdProducto())
+                                && filtroCategoria.equalsIgnoreCase(
+                                        productosPorId.get(prestamo.getIdProducto()).getCategoria())))
+                .filter(prestamo -> desde == null || !prestamo.getFecha().isBefore(desde))
+                .filter(prestamo -> hasta == null || !prestamo.getFecha().isAfter(hasta))
+                .toList();
+        if (desde != null && hasta != null && desde.isAfter(hasta)) {
+            model.addAttribute("errorFechas", "La fecha inicial no puede ser posterior a la fecha final.");
+            historial = List.of();
+        }
+        TreeSet<String> categorias = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+        productos.stream().map(Catalogo::getCategoria).filter(Objects::nonNull).forEach(categorias::add);
+
+        model.addAttribute("historial", historial);
+        model.addAttribute("productos", productos.stream()
+                .sorted(Comparator.comparing(Catalogo::getNombre, String.CASE_INSENSITIVE_ORDER))
+                .toList());
+        model.addAttribute("productosPorId", productosPorId);
+        model.addAttribute("categorias", categorias);
+        model.addAttribute("filtroUsuario", filtroUsuario);
+        model.addAttribute("filtroProducto", producto);
+        model.addAttribute("filtroCategoria", filtroCategoria);
+        model.addAttribute("fechaDesde", desde);
+        model.addAttribute("fechaHasta", hasta);
+        return "historial-prestamos";
     }
 
     @GetMapping("/nuevo")
@@ -216,6 +290,20 @@ public class PrestamoController {
         return prestamos.stream()
                 .filter(prestamo -> desde == null || !prestamo.getFecha().isBefore(desde))
                 .filter(prestamo -> hasta == null || !prestamo.getFecha().isAfter(hasta))
+                .toList();
+    }
+
+    private List<Prestamo> filtrarPorCriterios(List<Prestamo> prestamos, String usuario,
+                                               Long producto, String categoria,
+                                               Map<Long, Catalogo> productosPorId) {
+        return prestamos.stream()
+                .filter(prestamo -> usuario.isEmpty()
+                        || prestamo.getNombreSolicitante().toLowerCase(Locale.ROOT).contains(usuario))
+                .filter(prestamo -> producto == null || producto.equals(prestamo.getIdProducto()))
+                .filter(prestamo -> categoria.isEmpty()
+                        || (productosPorId.containsKey(prestamo.getIdProducto())
+                                && categoria.equalsIgnoreCase(
+                                        productosPorId.get(prestamo.getIdProducto()).getCategoria())))
                 .toList();
     }
 }

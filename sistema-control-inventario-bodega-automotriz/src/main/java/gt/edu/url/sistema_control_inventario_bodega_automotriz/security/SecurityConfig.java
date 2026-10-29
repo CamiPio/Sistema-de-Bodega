@@ -39,7 +39,7 @@ public class SecurityConfig {
                         "/error", "/acceso-denegado", "/h2-console/**").permitAll()
                 .requestMatchers("/usuarios/**", "/catalogo/nuevo", "/catalogo/guardar",
                         "/catalogo/editar/**", "/catalogo/eliminar/**", "/formulario",
-                        "/prestamos/guardar").hasRole("ADMIN")
+                        "/prestamos/guardar", "/prestamos/historial").hasRole("ADMIN")
                 .requestMatchers("/prestamos/solicitar").hasRole("USUARIO")
                 .requestMatchers("/prestamos/aprobar/**", "/prestamos/rechazar/**",
                         "/prestamos/devolver/**").hasRole("ADMIN")

@@ -30,12 +30,22 @@ document.querySelectorAll('[data-password-policy]').forEach((input) => {
             feedback.classList.add('error');
             input.setCustomValidity(message);
             input.setAttribute('aria-invalid', 'true');
+            if (input.closest('.caja-formulario.registro')) {
+                document.dispatchEvent(new CustomEvent('registro:validacion-contrasena', {
+                    detail: { message, type: 'error' }
+                }));
+            }
         } else {
             feedback.textContent = 'Contraseña válida.';
             feedback.classList.add('valida');
             feedback.classList.remove('error');
             input.setCustomValidity('');
             input.removeAttribute('aria-invalid');
+            if (input.closest('.caja-formulario.registro')) {
+                document.dispatchEvent(new CustomEvent('registro:validacion-contrasena', {
+                    detail: { message: feedback.textContent, type: 'success' }
+                }));
+            }
         }
     };
 

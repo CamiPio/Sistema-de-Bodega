@@ -30,6 +30,7 @@
                             <a th:if="${session.usuarioRol != 'ADMIN'}" th:href="@{/catalogo#herramientas}">Realizar préstamo</a>
                             <a th:if="${session.usuarioRol == 'ADMIN'}" th:href="@{/prestamos}">Solicitudes y préstamos</a>
                             <a th:if="${session.usuarioRol == 'ADMIN'}" th:href="@{/prestamos/nuevo}">Registrar préstamo a persona</a>
+                            <a th:if="${session.usuarioRol == 'ADMIN'}" th:href="@{/prestamos/historial}">Historial de préstamos</a>
                             <a th:if="${session.usuarioRol == 'ADMIN'}" th:href="@{/usuarios/lista}">Lista de Usuarios</a>
                         </div>
                     </li>

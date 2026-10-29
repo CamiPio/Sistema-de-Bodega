@@ -1,6 +1,7 @@
 package gt.edu.url.sistema_control_inventario_bodega_automotriz.service;
 
 import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -25,6 +26,14 @@ public class PrestamoService {
 
     public List<Prestamo> listarActivos() {
         return prestamoRepository.findByEstadoActivo(true);
+    }
+
+    public List<Prestamo> listarTerminados() {
+        return prestamoRepository.findByEstadoActivoFalse().stream()
+                .filter(prestamo -> !prestamo.isEstadoPendiente())
+                .sorted(Comparator.comparing(Prestamo::getFecha,
+                        Comparator.nullsLast(Comparator.reverseOrder())))
+                .toList();
     }
 
     public List<Prestamo> listarPendientes() {
