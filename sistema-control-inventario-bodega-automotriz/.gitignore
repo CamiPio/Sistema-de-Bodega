@@ -34,5 +34,5 @@ build/
 
 *.log
 .DS_Store
-.data/
-/db
+data/
+/db/
