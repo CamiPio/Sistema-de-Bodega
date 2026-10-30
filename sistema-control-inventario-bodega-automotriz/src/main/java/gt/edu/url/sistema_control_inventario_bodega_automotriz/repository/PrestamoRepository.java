@@ -12,5 +12,15 @@ public interface PrestamoRepository extends JpaRepository<Prestamo, Long> {
 
     List<Prestamo> findByEstadoActivo(boolean estadoActivo);
 
+    List<Prestamo> findByEstadoActivoFalse();
+
+    List<Prestamo> findByEstadoPendiente(boolean estadoPendiente);
+
+    long countByEstadoPendienteTrue();
+
+    List<Prestamo> findByIdUsuario(Long idUsuario);
+
+    List<Prestamo> findByIdUsuarioAndEstadoActivo(Long idUsuario, boolean estadoActivo);
+
     boolean existsByIdProductoAndEstadoActivo(Long idProducto, boolean estadoActivo);
 }

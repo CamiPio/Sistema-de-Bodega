@@ -11,6 +11,8 @@
 </head>
 <body>
 
+    <div id="registroNotificaciones" class="registro-notificaciones" aria-live="polite" aria-atomic="false"></div>
+
     <div class="contenedor" th:classappend="${mostrarRegistro} ? 'active' : ''">
         
         <!-- CAJA DE INICIO DE SESIÓN -->
@@ -35,6 +37,7 @@
                 <p class="mensaje-error-login" th:if="${param.error}" role="alert" aria-live="polite">
                     Correo o contraseña incorrectos
                 </p>
+                <button type="button" class="alternar-vista boton-registro">¿Aún no tienes cuenta? Regístrate</button>
             </form>            
         </div>
 
@@ -42,24 +45,29 @@
         <div class="caja-formulario registro">
             <form th:action="@{/auth/registrar}" th:object="${usuarioRegistro}" method="post">
                 <h1>Registro de Usuario</h1>   
-                <p th:if="${mensajeRegistro}" th:text="${mensajeRegistro}" role="status"></p>
-                <p th:if="${errorRegistro}" th:text="${errorRegistro}" role="alert"></p>
+                <p class="mensaje-validacion-registro" data-registro-aviso="success"
+                   th:if="${mensajeRegistro}" th:text="${mensajeRegistro}"></p>
+                <p class="mensaje-validacion-registro" data-registro-aviso="error"
+                   th:if="${errorRegistro}" th:text="${errorRegistro}"></p>
                 
                 <div class="ingreso-datos">
                     <input type="email" th:field="*{correo}" maxlength="254" placeholder="Correo electrónico" required>
-                    <span th:errors="*{correo}" role="alert"></span>
+                    <span class="mensaje-validacion-registro" data-registro-aviso="error"
+                          th:errors="*{correo}"></span>
                     <svg><i class="fa-solid fa-envelope"></i></svg>
                  </div>
 
                  <div class="ingreso-datos">
                     <input type="text" th:field="*{nombre}" maxlength="100" placeholder="Nombre" required>
-                    <span th:errors="*{nombre}" role="alert"></span>
+                    <span class="mensaje-validacion-registro" data-registro-aviso="error"
+                          th:errors="*{nombre}"></span>
                     <svg><i class="fa-solid fa-user"></i></svg>
                  </div>
 
                  <div class="ingreso-datos">
                     <input type="text" th:field="*{apellido}" maxlength="100" placeholder="Apellido" required>
-                    <span th:errors="*{apellido}" role="alert"></span>
+                    <span class="mensaje-validacion-registro" data-registro-aviso="error"
+                          th:errors="*{apellido}"></span>
                     <svg><i class="fa-solid fa-user"></i></svg>
                  </div>
                 
@@ -78,6 +86,7 @@
                 </label>
 
                 <input type="submit" value="Registrarse" class="boton">
+                <button type="button" class="alternar-vista boton-iniciar">¿Ya tienes cuenta? Inicia sesión</button>
             </form>            
         </div>
 
@@ -101,17 +110,19 @@
     <!-- Script original para la animación deslizante de los paneles -->
     <script>
         const contenedor = document.querySelector('.contenedor');
-        const botonRegistro = document.querySelector('.boton-registro');
-        const botonLogin = document.querySelector('.boton-iniciar');
-
-        botonRegistro.addEventListener('click', () => {
-            contenedor.classList.add('active');
+        document.querySelectorAll('.boton-registro').forEach((boton) => {
+            boton.addEventListener('click', () => {
+                contenedor.classList.add('active');
+            });
         });
 
-        botonLogin.addEventListener('click', () => {
-            contenedor.classList.remove('active');
+        document.querySelectorAll('.boton-iniciar').forEach((boton) => {
+            boton.addEventListener('click', () => {
+                contenedor.classList.remove('active');
+            });
         });
     </script>
+    <script th:src="@{/registration-feedback.js}" defer></script>
     <script th:src="@{/password-toggle.js}" defer></script>
     <script th:src="@{/password-validation.js}" defer></script>
 </body>

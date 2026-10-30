@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historial de préstamos - Sistema de Bodega</title>
+    <link rel="stylesheet" th:href="@{/barraMenu.css}">
+    <link rel="stylesheet" th:href="@{/app.css}">
+    <link rel="stylesheet" th:href="@{/prestamos.css}">
+</head>
+<body class="app-page prestamos-page">
+    <div th:replace="barraMenu :: menu"></div>
+
+    <main>
+        <header class="prestamos-header">
+            <span class="prestamos-eyebrow">GESTIÓN DE BODEGA</span>
+            <h1>Historial de préstamos</h1>
+            <p>Consulta las devoluciones y solicitudes rechazadas. Filtra por solicitante, herramienta, categoría o fecha.</p>
+        </header>
+
+        <form class="filtros-prestamos" th:action="@{/prestamos/historial}" method="get">
+            <label for="filtroUsuario">Usuario o solicitante
+                <input id="filtroUsuario" type="search" name="usuario" maxlength="120"
+                       placeholder="Buscar por nombre" th:value="${filtroUsuario}">
+            </label>
+            <label for="filtroProducto">Herramienta
+                <select id="filtroProducto" name="producto">
+                    <option value="">Todas las herramientas</option>
+                    <option th:each="opcion : ${productos}" th:value="${opcion.id}"
+                            th:selected="${filtroProducto == opcion.id}"
+                            th:text="${opcion.nombre}">Herramienta</option>
+                </select>
+            </label>
+            <label for="filtroCategoria">Categoría
+                <select id="filtroCategoria" name="categoria">
+                    <option value="">Todas las categorías</option>
+                    <option th:each="opcion : ${categorias}" th:value="${opcion}"
+                            th:selected="${filtroCategoria == opcion}"
+                            th:text="${opcion}">Categoría</option>
+                </select>
+            </label>
+            <label for="fechaDesde">Desde
+                <input id="fechaDesde" type="date" name="desde" th:value="${fechaDesde}">
+            </label>
+            <label for="fechaHasta">Hasta
+                <input id="fechaHasta" type="date" name="hasta" th:value="${fechaHasta}">
+            </label>
+            <div class="acciones-filtros">
+                <button type="submit">Aplicar filtros</button>
+                <a th:href="@{/prestamos/historial}">Limpiar</a>
+            </div>
+        </form>
+
+        <p th:if="${errorFechas}" class="aviso-prestamo error" th:text="${errorFechas}" role="alert"></p>
+        <p class="resumen-prestamos" role="status">
+            Registros encontrados: <strong th:text="${#lists.size(historial)}">0</strong>
+        </p>
+
+        <table class="tabla-prestamos">
+            <thead>
+                <tr>
+                    <th>ID préstamo</th>
+                    <th>Fecha del préstamo</th>
+                    <th>Estado</th>
+                    <th>Usuario o solicitante</th>
+                    <th>Herramienta</th>
+                    <th>Categoría</th>
+                    <th>Observación de salida</th>
+                    <th>Observación de devolución</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="prestamo : ${historial}">
+                    <td th:text="${prestamo.idPresamo}">1</td>
+                    <td th:text="${prestamo.fecha}">2026-10-28</td>
+                    <td>
+                        <span th:if="${prestamo.estadoRechazado}" class="estado-prestamo rechazado">Solicitud rechazada</span>
+                        <span th:unless="${prestamo.estadoRechazado}" class="estado-prestamo devuelto">Devuelto</span>
+                    </td>
+                    <td th:text="${prestamo.nombreSolicitante}">Solicitante</td>
+                    <td th:text="${productosPorId[prestamo.idProducto] != null ? productosPorId[prestamo.idProducto].nombre : 'Herramienta eliminada (ID ' + prestamo.idProducto + ')'}">Herramienta</td>
+                    <td th:text="${productosPorId[prestamo.idProducto] != null ? productosPorId[prestamo.idProducto].categoria : 'Sin categoría disponible'}">Categoría</td>
+                    <td th:text="${prestamo.observacionEntrega ?: 'Sin observación'}">Sin observación</td>
+                    <td th:text="${prestamo.observacionDevolucion ?: 'Sin observación'}">Sin observación</td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(historial)}">
+                    <td class="sin-resultados" colspan="8">No hay devoluciones ni solicitudes rechazadas que coincidan con los filtros.</td>
+                </tr>
+            </tbody>
+        </table>
+    </main>
+</body>
+</html>

@@ -1,0 +1,88 @@
+body.app-page {
+    display: block;
+    min-width: 320px;
+    min-height: 100vh;
+    padding-top: 90px !important;
+    padding-right: clamp(12px, 2.5vw, 28px);
+    padding-bottom: 24px;
+    padding-left: clamp(12px, 2.5vw, 28px);
+    background-color: #f4f6f9;
+    color: #263445;
+}
+
+.app-page main {
+    width: min(1200px, 100%);
+    margin: 18px auto;
+    padding: clamp(16px, 3vw, 30px);
+    border-radius: 12px;
+    background: #fff;
+    color: #263445;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+}
+
+.app-page main.card-formulario {
+    width: min(500px, 100%);
+    margin: 18px auto;
+}
+
+.app-page h1,
+.app-page h2,
+.app-page h3,
+.app-page p,
+.app-page dd,
+.app-page td,
+.app-page th {
+    overflow-wrap: anywhere;
+}
+
+.app-page form {
+    max-width: 100%;
+}
+
+.app-page input,
+.app-page select,
+.app-page textarea {
+    max-width: 100%;
+    min-width: 0;
+}
+
+.app-page button {
+    max-width: 100%;
+}
+
+.app-page .seccion-header {
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.app-page table {
+    max-width: 100%;
+    border-collapse: collapse;
+}
+
+@media (max-width: 768px) {
+    body.app-page {
+        padding-top: 82px !important;
+    }
+
+    .app-page main {
+        margin: 12px auto;
+    }
+
+    .app-page table {
+        display: block;
+        width: 100%;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    .app-page th,
+    .app-page td {
+        padding: 9px;
+    }
+
+    .app-page .seccion-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}

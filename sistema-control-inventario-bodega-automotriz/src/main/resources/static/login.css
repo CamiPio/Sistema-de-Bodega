@@ -179,6 +179,76 @@ input:hover{
     color: #b42318;
 }
 
+.caja-formulario.registro .ingreso-datos .regla-contrasena{
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.mensaje-validacion-registro{
+    display: none;
+}
+
+.registro-notificaciones{
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    z-index: 20;
+    display: flex;
+    width: min(380px, calc(100vw - 32px));
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+}
+
+.registro-toast{
+    padding: 13px 16px;
+    border: 1px solid;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .2);
+    color: #fff;
+    font-size: 14px;
+    line-height: 1.45;
+    opacity: 0;
+    transform: translateY(-8px);
+    transition: opacity .2s ease, transform .2s ease;
+}
+
+.registro-toast.is-visible{
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.registro-toast.error{
+    border-color: #fecdca;
+    background: #b42318;
+}
+
+.registro-toast.success{
+    border-color: #a6f4c5;
+    background: #067647;
+}
+
+@media (max-width: 600px){
+    .registro-notificaciones{
+        top: 10px;
+        right: 10px;
+        width: calc(100vw - 20px);
+    }
+}
+
+@media (prefers-reduced-motion: reduce){
+    .registro-toast{
+        transition: none;
+    }
+}
+
 .mostrar-contrasena input[type="checkbox"]{
     width: auto;
     margin: 0;
@@ -278,4 +348,95 @@ input:hover{
 .panel-lateral a:hover{
     width: 210px;
     color: var(--color-principal);
+}
+
+.alternar-vista{
+    display: none;
+    margin-top: 16px;
+    padding: 10px;
+    background: transparent;
+    color: var(--color-principal);
+    box-shadow: none;
+    text-decoration: underline;
+}
+
+@media (max-width: 850px){
+    body{
+        padding: 12px;
+    }
+
+    .contenedor{
+        width: min(100%, 560px);
+        height: min(760px, calc(100vh - 24px));
+        min-height: 0;
+        border-radius: 18px;
+    }
+
+    .caja-panel{
+        display: none;
+    }
+
+    .caja-formulario,
+    .contenedor.active .caja-formulario{
+        right: 0;
+        width: 100%;
+        height: 100%;
+        padding: clamp(20px, 6vw, 40px);
+        align-items: flex-start;
+        overflow-y: auto;
+        transition: none;
+    }
+
+    .caja-formulario.login,
+    .contenedor.active .caja-formulario.login{
+        visibility: visible;
+    }
+
+    .contenedor.active .caja-formulario.login{
+        visibility: hidden;
+    }
+
+    .caja-formulario.registro,
+    .contenedor.active .caja-formulario.registro{
+        visibility: hidden;
+    }
+
+    .contenedor.active .caja-formulario.registro{
+        visibility: visible;
+    }
+
+    .contenedor h1,
+    .contenedor-recurso h1{
+        margin: 0 0 12px;
+        font-size: clamp(22px, 6vw, 30px);
+    }
+
+    .ingreso-datos{
+        margin: 20px 0;
+    }
+
+    .alternar-vista{
+        display: block;
+    }
+}
+
+@media (max-width: 420px){
+    body{
+        padding: 8px;
+    }
+
+    .contenedor{
+        height: calc(100vh - 16px);
+        border-radius: 12px;
+    }
+
+    .caja-formulario,
+    .contenedor.active .caja-formulario{
+        padding: 20px 16px;
+    }
+
+    .ingreso-datos input{
+        padding: 12px 42px 12px 14px;
+        font-size: 15px;
+    }
 }

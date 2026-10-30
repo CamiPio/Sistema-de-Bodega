@@ -1,0 +1,482 @@
+.panel-inventario {
+    display: grid;
+    gap: 24px;
+}
+
+.encabezado-dashboard,
+.encabezado-seccion,
+.acciones-dashboard,
+.botones-formulario {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.encabezado-dashboard {
+    padding: 8px 0;
+}
+
+.etiqueta-panel {
+    color: #64748b;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+}
+
+.encabezado-dashboard h1,
+.encabezado-formulario h1 {
+    margin: 8px 0;
+    color: #172b4d;
+    font-size: clamp(1.7rem, 3vw, 2.25rem);
+    text-align: left;
+}
+
+.encabezado-dashboard p,
+.encabezado-formulario p,
+.encabezado-seccion p {
+    margin: 0;
+    color: #64748b;
+}
+
+.acciones-dashboard {
+    justify-content: flex-end;
+    flex-wrap: wrap;
+}
+
+.boton-dashboard {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 42px;
+    padding: 10px 16px;
+    border: 0;
+    border-radius: 9px;
+    font: inherit;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+    transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+
+.boton-dashboard:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 7px 16px rgba(15, 23, 42, 0.15);
+}
+
+.boton-principal {
+    background: #1769aa;
+    color: #fff;
+}
+
+.boton-principal:hover {
+    background: #0e548c;
+}
+
+.boton-secundario {
+    border: 1px solid #d6e0ea;
+    background: #fff;
+    color: #334155;
+}
+
+.resumen-inventario {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.resumen-inventario.resumen-usuario {
+    grid-template-columns: minmax(0, 300px);
+}
+
+.tarjeta-resumen {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 0;
+    padding: 20px;
+    border: 1px solid #e8edf3;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 5px 16px rgba(30, 55, 90, 0.06);
+    transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.tarjeta-resumen:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 22px rgba(30, 55, 90, 0.11);
+}
+
+.icono-resumen {
+    display: grid;
+    width: 44px;
+    height: 44px;
+    flex: 0 0 44px;
+    place-items: center;
+    border-radius: 12px;
+    font-size: 1.35rem;
+    font-weight: 800;
+}
+
+.tarjeta-resumen p {
+    margin: 0 0 5px;
+    color: #64748b;
+    font-size: 0.84rem;
+}
+
+.tarjeta-resumen strong {
+    color: #172b4d;
+    font-size: 1.65rem;
+}
+
+.tarjeta-azul .icono-resumen {
+    background: #e8f2ff;
+    color: #1769aa;
+}
+
+.tarjeta-verde .icono-resumen {
+    background: #e7f8ef;
+    color: #17834c;
+}
+
+.tarjeta-ambar .icono-resumen {
+    background: #fff4dc;
+    color: #b77911;
+}
+
+.tarjeta-violeta .icono-resumen {
+    background: #f0eaff;
+    color: #7045b5;
+}
+
+.seccion-inventario {
+    min-width: 0;
+    padding: 22px;
+    border: 1px solid #e8edf3;
+    border-radius: 14px;
+    background: #fff;
+}
+
+.encabezado-seccion {
+    margin-bottom: 18px;
+}
+
+.encabezado-seccion h2 {
+    margin: 0 0 5px;
+    color: #172b4d;
+    text-align: left;
+}
+
+.encabezado-seccion p {
+    font-size: 0.9rem;
+}
+
+.tabla-scroll {
+    overflow-x: auto;
+}
+
+.tabla-inventario {
+    width: 100%;
+    min-width: 700px;
+    border-collapse: collapse;
+}
+
+.tabla-inventario th {
+    padding: 12px 14px;
+    background: #f5f8fc;
+    color: #52657d;
+    font-size: 0.75rem;
+    letter-spacing: 0.04em;
+    text-align: left;
+    text-transform: uppercase;
+}
+
+.tabla-inventario td {
+    padding: 14px;
+    border-bottom: 1px solid #edf1f5;
+    color: #334155;
+    vertical-align: middle;
+}
+
+.tabla-inventario tbody tr {
+    transition: background 140ms ease;
+}
+
+.tabla-inventario tbody tr:hover {
+    background: #f8fbff;
+}
+
+.nombre-herramienta {
+    display: block;
+    color: #172b4d;
+    font-weight: 700;
+}
+
+.tabla-inventario td small {
+    display: block;
+    margin-top: 4px;
+    color: #94a3b8;
+}
+
+.etiqueta-categoria,
+.estado-stock {
+    display: inline-block;
+    padding: 5px 9px;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.etiqueta-categoria {
+    background: #eef4fa;
+    color: #47627f;
+}
+
+.estado-disponible {
+    background: #e8f7ee;
+    color: #187747;
+}
+
+.estado-bajo {
+    background: #fff4dc;
+    color: #9a6508;
+}
+
+.estado-agotado {
+    background: #fdecec;
+    color: #b42318;
+}
+
+.descripcion-herramienta {
+    max-width: 280px;
+}
+
+.acciones-tabla {
+    white-space: nowrap;
+}
+
+.acciones-tabla form {
+    display: inline;
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+.acciones-tabla button,
+.acciones-tabla a {
+    width: auto;
+    padding: 5px 8px;
+    background: transparent;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.accion-editar {
+    color: #1769aa;
+}
+
+.acciones-tabla .accion-eliminar {
+    color: #b42318;
+}
+
+.boton-prestamo-herramienta {
+    min-height: 36px;
+    padding: 8px 11px;
+    font-size: 0.85rem;
+}
+
+.sin-resultados {
+    padding: 24px 12px;
+    color: #64748b;
+    text-align: center;
+}
+
+.sin-resultados a,
+.volver-catalogo {
+    color: #1769aa;
+    font-weight: 700;
+}
+
+.mensaje-dashboard {
+    margin: 0;
+    padding: 12px 16px;
+    border-radius: 9px;
+    background: #e8f7ee;
+    color: #187747;
+}
+
+.mensaje-error-dashboard {
+    background: #fdecec;
+    color: #b42318;
+}
+
+.enlace-prestamos-movil {
+    display: none;
+}
+
+.formulario-herramienta {
+    width: min(820px, 100%);
+}
+
+.volver-catalogo {
+    display: inline-block;
+    margin-bottom: 22px;
+    text-decoration: none;
+}
+
+.encabezado-formulario {
+    margin-bottom: 22px;
+}
+
+.formulario-catalogo {
+    margin: 0;
+    padding: clamp(18px, 4vw, 30px);
+    border: 1px solid #e8edf3;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 5px 16px rgba(30, 55, 90, 0.06);
+}
+
+.campos-formulario {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.campo-formulario {
+    min-width: 0;
+}
+
+.campo-completo {
+    grid-column: 1 / -1;
+}
+
+.campo-formulario label {
+    margin: 0 0 7px;
+    color: #334155;
+    font-size: 0.9rem;
+}
+
+.campo-formulario label span,
+.campo-formulario small {
+    color: #718096;
+    font-weight: 400;
+}
+
+.campo-formulario input,
+.campo-formulario textarea {
+    width: 100%;
+    padding: 11px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: #fff;
+    color: #172b4d;
+    font: inherit;
+}
+
+.campo-formulario input:focus,
+.campo-formulario textarea:focus {
+    border-color: #3182ce;
+    outline: 3px solid rgba(49, 130, 206, 0.14);
+}
+
+.campo-formulario input:disabled {
+    background: #f1f5f9;
+    color: #64748b;
+}
+
+.campo-formulario small {
+    display: block;
+    margin-top: 6px;
+    line-height: 1.4;
+}
+
+.error-formulario {
+    display: block;
+    margin: 6px 0 0;
+    color: #b42318;
+    font-size: 0.85rem;
+}
+
+.botones-formulario {
+    justify-content: flex-end;
+    margin-top: 24px;
+}
+
+@media (max-width: 1000px) {
+    .resumen-inventario {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 650px) {
+    .encabezado-dashboard,
+    .encabezado-seccion {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .acciones-dashboard {
+        width: 100%;
+        justify-content: stretch;
+    }
+
+    .acciones-dashboard .boton-dashboard {
+        flex: 1;
+    }
+
+    .resumen-inventario {
+        gap: 10px;
+    }
+
+    .tarjeta-resumen {
+        gap: 10px;
+        padding: 14px 12px;
+    }
+
+    .icono-resumen {
+        width: 36px;
+        height: 36px;
+        flex-basis: 36px;
+    }
+
+    .tarjeta-resumen p {
+        font-size: 0.75rem;
+    }
+
+    .tarjeta-resumen strong {
+        font-size: 1.35rem;
+    }
+
+    .seccion-inventario {
+        padding: 16px 12px;
+    }
+
+    .enlace-prestamos-movil {
+        display: inline-block;
+        color: #1769aa;
+        font-size: 0.9rem;
+        font-weight: 700;
+        text-decoration: none;
+    }
+
+    .campos-formulario {
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
+
+    .campo-completo {
+        grid-column: auto;
+    }
+
+    .botones-formulario {
+        flex-direction: column-reverse;
+    }
+
+    .botones-formulario .boton-dashboard {
+        width: 100%;
+    }
+}

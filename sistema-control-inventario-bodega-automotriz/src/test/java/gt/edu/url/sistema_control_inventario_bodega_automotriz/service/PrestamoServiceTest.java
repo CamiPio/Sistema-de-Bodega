@@ -61,6 +61,64 @@ class PrestamoServiceTest {
     }
 
     @Test
+    void registraSolicitudPendienteSinDescontarDisponibilidad() {
+        Catalogo herramienta = herramienta(5, 3);
+        Prestamo solicitud = prestamoValido();
+        solicitud.setIdUsuario(12L);
+        when(catalogoRepository.findById(8L)).thenReturn(Optional.of(herramienta));
+
+        prestamoService.registrarSolicitud(solicitud);
+
+        assertEquals(true, solicitud.isEstadoPendiente());
+        assertEquals(false, solicitud.isEstadoActivo());
+        assertEquals(3, herramienta.getDisponibilidad());
+        verify(catalogoRepository, never()).save(any(Catalogo.class));
+        verify(prestamoRepository).save(solicitud);
+    }
+
+    @Test
+    void aprobarSolicitudDescuentaDisponibilidadYActivaElPrestamo() {
+        Catalogo herramienta = herramienta(5, 3);
+        Prestamo solicitud = prestamoValido();
+        solicitud.setIdUsuario(12L);
+        solicitud.setEstadoPendiente(true);
+        when(prestamoRepository.findById(3L)).thenReturn(Optional.of(solicitud));
+        when(catalogoRepository.findById(8L)).thenReturn(Optional.of(herramienta));
+
+        prestamoService.aprobarSolicitud(3L, "Sin daños visibles");
+
+        assertEquals(false, solicitud.isEstadoPendiente());
+        assertEquals(true, solicitud.isEstadoActivo());
+        assertEquals(2, herramienta.getDisponibilidad());
+        verify(catalogoRepository).save(herramienta);
+        verify(prestamoRepository).save(solicitud);
+    }
+
+    @Test
+    void noApruebaSolicitudSinComentarioDeSalida() {
+        assertThrows(IllegalArgumentException.class,
+                () -> prestamoService.aprobarSolicitud(3L, " "));
+
+        verify(prestamoRepository, never()).findById(3L);
+    }
+
+    @Test
+    void rechazarSolicitudNoAfectaDisponibilidad() {
+        Catalogo herramienta = herramienta(5, 3);
+        Prestamo solicitud = prestamoValido();
+        solicitud.setEstadoPendiente(true);
+        when(prestamoRepository.findById(3L)).thenReturn(Optional.of(solicitud));
+
+        prestamoService.rechazarSolicitud(3L);
+
+        assertEquals(false, solicitud.isEstadoPendiente());
+        assertEquals(true, solicitud.isEstadoRechazado());
+        assertEquals(3, herramienta.getDisponibilidad());
+        verify(catalogoRepository, never()).save(any(Catalogo.class));
+        verify(prestamoRepository).save(solicitud);
+    }
+
+    @Test
     void rechazaDevolucionRepetida() {
         Prestamo prestamo = prestamoValido();
         prestamo.setEstadoActivo(false);
@@ -68,6 +126,18 @@ class PrestamoServiceTest {
 
         assertThrows(IllegalArgumentException.class,
                 () -> prestamoService.registrarDevolucion(3L, "Buen estado"));
+
+        verify(catalogoRepository, never()).save(any(Catalogo.class));
+    }
+
+    @Test
+    void rechazaDevolucionDePrestamoDeOtroUsuario() {
+        Prestamo prestamo = prestamoValido();
+        prestamo.setIdUsuario(10L);
+        when(prestamoRepository.findById(3L)).thenReturn(Optional.of(prestamo));
+
+        assertThrows(IllegalArgumentException.class,
+                () -> prestamoService.registrarDevolucion(3L, "Buen estado", 11L));
 
         verify(catalogoRepository, never()).save(any(Catalogo.class));
     }
